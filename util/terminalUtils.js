@@ -115,31 +115,32 @@ export default new class TerminalUtils {
 
         
 
-        register("packetReceived", () => {
+        register("packetSent", () => {
             if (!this.inTerm) return;
+            chat("in term")
             this.inTerm = false
-            chat(`Terminal &c${this.currentTitle} &7completed in &c${(Date.now() - this.initialOpen) / 1000}&7s`)
+            chat(`Terminal &d${this.currentTitle} &7completed in &d${(Date.now() - this.initialOpen) / 1000}&7s`)
             this._reloadTerm()
         }).setFilteredClass(CloseHandledScreenC2SPacket)
 
-        register("packetSent", () => {
+        register("packetReceived", () => {
             if (!this.inTerm) return;
             this.inTerm = false
-            chat(`Terminal &c${this.currentTitle} &7completed in &c${(Date.now() - this.initialOpen) / 1000}&7s`)
+            chat(`Terminal &d${this.currentTitle} &7completed in &d${(Date.now() - this.initialOpen) / 1000}&7s`)
             this._reloadTerm()
         }).setFilteredClass(CloseScreenS2CPacket)
 
         register("packetSent", (packet, event) => {
             if (!this.inTerm) return;
             if (this.terminalID == 5) return;
-            if (Date.now() - this.initialOpen < 300 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) {
+            if (Date.now() - this.initialOpen < 380 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) {
                 cancel(event)
             }
         }).setFilteredClass(ClickSlotC2SPacket)
 
         register("packetSent", (packet, event) => {
-            if (!Player.lookingAt() || Player.lookingAt() instanceof Block || !Player.lookingAt().getName().removeFormatting() === "Inactive Terminal") return;
-
+            if (!Player.lookingAt() || Player.lookingAt() instanceof Block || Player.lookingAt().getName().removeFormatting() != "Inactive Terminal") return;
+            
             if (this.lastInteract > 0 || this.isInTerm()) cancel(event)
             else this.lastInteract = 10
 

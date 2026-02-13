@@ -3,7 +3,7 @@ import terminalUtils from "../../util/terminalUtils"
 import { chat, CommonPingS2CPacket, OpenScreenS2CPacket, PlayerInteractEntityC2SPacket, PlayerPositionLookS2CPacket, rightClick } from "../../util/utils"
 import RenderUtils from "../../../PrivateASF-Fabric/util/renderUtils"
 
-let lastClick
+let lastClick = 0
 let lastS08 = 0
 
 register("packetReceived", (packet, event) => {
@@ -29,7 +29,7 @@ register("tick", () => {
     if (Date.now() - lastS08 < leapDelayMs) return;
 
     if (lastClick > 0) return;
-    if (Player?.getContainer()?.getName() !== "container") return;
+    if (Player?.getContainer()?.getName() !== undefined) return;
 
 
     if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") {
@@ -77,7 +77,7 @@ register("packetSent", (packet) => {
     if (!mcEntity) return;
 
     const entity = new Entity(mcEntity);
-    if (entity.getName() !== "§cInactive Terminal") return;
+    if (entity.getName().removeFormatting() !== "Inactive Terminal") return;
 
     const time = new Date().getTime();
     const position = [entity.getX(), entity.getY(), entity.getZ()];
