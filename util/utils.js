@@ -23,10 +23,24 @@ export function chat(msg) {
     ChatLib.chat(`${getPrefix()} &r${msg}`)
 }
 
+export function leftClick() {
+    const c = ConfigModule.default;
+    const mc = Client.getMinecraft()
+    const hit = mc.crosshairTarget
+
+    if (!hit) return
+    const type = hit.getType().toString()
+
+    if (type === "BLOCK") mc.interactionManager.attackBlock(hit.getBlockPos(), hit.getSide())
+    else if (type === "ENTITY") mc.interactionManager.attackEntity(mc.player, hit.getEntity())
+
+    mc.player.swingHand(Hand.field_5808)
+}
+
 
 export function rightClick(shouldSwing = false) {
     const c = ConfigModule.default;
-    if (c && c.legitRightClick) {
+    if (c && c.legitClicks) {
         Client.getMinecraft().options["useKey"].setPressed(true)
         Client.scheduleTask(1, () => Client.getMinecraft().options["useKey"].setPressed(false))
     }
@@ -41,23 +55,6 @@ export function rightClick(shouldSwing = false) {
     }
 }
 
-export function leftClick() {
-    const mc = Client.getMinecraft()
-    const hit = mc.crosshairTarget
-
-    if (!hit) return
-
-    const type = hit.getType().toString()
-
-    if (type === "ENTITY") {
-        mc.interactionManager.attackEntity(mc.player, hit.getEntity())
-    }
-    else if (type === "BLOCK") {
-        mc.interactionManager.attackBlock(hit.getBlockPos(), hit.getSide())
-    }
-
-    mc.player.swingHand(Hand.field_5808)
-}
 
 export function pressMovementKey(key, state, exec) {
     if (['backKey', 'rightKey', 'leftKey', 'sprintKey', 'forwardKey', 'attackKey', 'sneakKey', 'useKey', 'jumpKey'].includes(key)) {

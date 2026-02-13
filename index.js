@@ -19,7 +19,7 @@ Client.scheduleTask(0, () => {
     }
 })
 
-const IGNORED_FEATURES = ["autoTerms", "autoMelody"];
+const IGNORED_FEATURES = ["autoTerms", "autoMelody", "autoClicker"];
 
 const FEATURE_FOLDERS = [
     "Dungeon",
@@ -86,6 +86,6 @@ export default function ClassifiedASF() {
     }).setName("cagui")
 
 
-
+    
 
 }

@@ -41,14 +41,12 @@ const worldLoad = register("worldLoad", () => {
 }).unregister()
 
 register("chat", (msg) => {
+    const unformatted = msg.removeFormatting()
     if (c.disableAfterStart) {
-        if (msg.includes("[NPC] Mort: Here, I found this map when I first entered the dungeon.")) startScanning = false;
+        if (unformatted.includes("[NPC] Mort: Here, I found this map when I first entered the dungeon.")) startScanning = false;
     }
     else {
-        if (msg.includes("The BLOOD DOOR has been opened!")) {
-            startScanning = false;
-            ChatLib.chat("testinginigngs")
-        }
+        if (unformatted.includes("The BLOOD DOOR has been opened!")) startScanning = false;
     }
 }).setCriteria("${msg}")
 
@@ -127,4 +125,5 @@ c.registerListener("Bye Bye Door", (curr) => {
 
 if (c.byebyeDoor) {
     worldLoad.register()
+    startScanning = true
 }

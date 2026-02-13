@@ -26,10 +26,12 @@ class config {
     constructor() {
         this.initialize(this)
 
-        this.addDependency("Glass Color", "Bye Bye Door");
+        this.addDependency("Glass Color", "Bye Bye Door" && "Custom Color");
         this.addDependency("Full Glass Start Door", "Bye Bye Door");
         this.addDependency("Disable On Dungeon Start", "Bye Bye Door");
+        this.addDependency("Custom Color", "Bye Bye Door")
 
+        this.addDependency("Terminal TB Leap Delay", "Terminal Trigger Bot")
         this.registerListener("Open Gui Editor", (curr) => {
             Client.currentGui.close()
             activategui()
@@ -95,6 +97,17 @@ class config {
     })
     terminalTB = false
 
+    @SliderProperty({
+        name: "Terminal TB Leap Delay",
+        description: "Delay for when it should start clicking after leaping (it is in mS so 1000 = 1 second)",
+        category: "Auto Terms",
+        subcategory: "Trigger Bot",
+        min: 1,
+        max: 2000,
+        increment: 1,
+    })
+    terminalTBLeapDelay = 0;
+
     @SwitchProperty({
         name: "Terminal Highlight",
         description: "Highlight the Box of the Terminal when right clicking",
@@ -103,16 +116,6 @@ class config {
     })
     terminalTBHighlight = false
 
-    @SliderProperty({
-        name: "Terminal TB Leap Delay",
-        description: "Delay for when it should start clicking after leaping (it is in mS so 1000 = 1 second)",
-        category: "Auto Terms",
-        subcategory: "Auto Terms",
-        min: 1,
-        max: 2000,
-        increment: 1,
-    })
-    terminalTBLeapDelay = 0;
 
 
     @SwitchProperty({
@@ -135,7 +138,7 @@ class config {
         name: "Prefix for mod chats",
         description: "",
         category: "Settings",
-        subcategory: "Prefix",
+        subcategory: "§0Prefix",
         options: ["ClassifiedASF", "Classified", "PrivateASF", "Private", "PA", "PASF"]
     })
     customPrefix = 0;
@@ -144,9 +147,9 @@ class config {
         name: "More legit right clicks???",
         description: "This might just be schitzo idk, use it if you feel more safe",
         category: "Settings",
-        subcategory: "Right clicks"
+        subcategory: "Clicks"
     })
-    legitRightClick = false
+    legitClicks = false
 
 }
 

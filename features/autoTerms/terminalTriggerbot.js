@@ -7,7 +7,7 @@ let lastClick = 0
 let lastS08 = 0
 
 register("packetReceived", (packet, event) => {
-    const title = packet.getName().getString()
+    const title = packet?.getName()?.getString()
     if (title == ("Click the button on time!")) lastClick = 0
 }).setFilteredClass(OpenScreenS2CPacket)
 

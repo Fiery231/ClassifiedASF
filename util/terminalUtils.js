@@ -45,6 +45,7 @@ export default new class TerminalUtils {
         this.lastWindowID = -52345234532
 
         register("packetReceived", (packet, event) => {
+            if (!(packet instanceof OpenScreenS2CPacket)) return
             const windowTitle = packet.getName().getString();
             this.currentTitle = windowTitle;
             let terminalFound = false;
