@@ -1,0 +1,8 @@
+{
+    "name": "§5ClassifiedASF",
+    "creator": "Fiery",
+    "description": "&cRequires PrivateASF to load and function",
+    "entry": "index.js",
+    "version": "1.0.0",
+    "requires": ["Vigilance"]
+}
