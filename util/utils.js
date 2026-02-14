@@ -24,7 +24,7 @@ export function chat(msg) {
 }
 
 export function leftClick() {
-    const c = ConfigModule.default;
+    //const c = ConfigModule.default;
     const mc = Client.getMinecraft()
     const hit = mc.crosshairTarget
 

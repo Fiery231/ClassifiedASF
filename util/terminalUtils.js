@@ -34,15 +34,16 @@ const colorOrder = ['minecraft:red_stained_glass_pane', 'minecraft:orange_staine
 
 export default new class TerminalUtils {
     constructor() {
-        this.inTerm = false
-        this.currentItems = []
-        this.shouldSolve = false
-        this.initialOpen = 0
-        this.terminalID = -1
-        this.maxSlot = 999
-        this.currentTitle = ""
-        this.solutionLength = -1
-        this.lastWindowID = -52345234532
+        this.inTerm = false;
+        this.currentItems = [];
+        this.shouldSolve = false;
+        this.initialOpen = 0;
+        this.terminalID = -1;
+        this.maxSlot = 999;
+        this.currentTitle = "";
+        this.solutionLength = -1;
+        this.lastWindowID = -52345234532;
+        this.lastInteract = 0;
 
         register("packetReceived", (packet, event) => {
             if (!(packet instanceof OpenScreenS2CPacket)) return
@@ -118,9 +119,8 @@ export default new class TerminalUtils {
 
         register("packetSent", () => {
             if (!this.inTerm) return;
-            chat("in term")
             this.inTerm = false
-            chat(`Terminal &d${this.currentTitle} &7completed in &d${(Date.now() - this.initialOpen) / 1000}&7s`)
+            //chat(`Terminal &d${this.currentTitle} &7completed in &d${(Date.now() - this.initialOpen) / 1000}&7s`)
             this._reloadTerm()
         }).setFilteredClass(CloseHandledScreenC2SPacket)
 
@@ -134,9 +134,7 @@ export default new class TerminalUtils {
         register("packetSent", (packet, event) => {
             if (!this.inTerm) return;
             if (this.terminalID == 5) return;
-            if (Date.now() - this.initialOpen < 380 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) {
-                cancel(event)
-            }
+            if (Date.now() - this.initialOpen < 380 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) cancel(event)
         }).setFilteredClass(ClickSlotC2SPacket)
 
         register("packetSent", (packet, event) => {

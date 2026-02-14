@@ -46,17 +46,3 @@ register("tick", () => {
         }
     }
 })
-
-
-// register("packetReceived", (packet, event) => {
-
-//     if (packet.overlay()) return;
-
-//     const content = packet.content();
-
-//     const message = content.getString();
-
-//     if (message.trim().length > 0) {
-//         console.log(message);
-//     }
-// }).setFilteredClass(GameMessageS2CPacket);
