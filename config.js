@@ -31,6 +31,10 @@ class config {
         this.addDependency("Disable On Dungeon Start", "Bye Bye Door");
         this.addDependency("Custom Color", "Bye Bye Door")
 
+        this.addDependency("Melody Skip On", "Auto Melody")
+        this.addDependency("Don't Skip First Slot", "Auto Melody")
+        this.addDependency("Only skip two on open", "Auto Melody")
+
         this.addDependency("Terminal TB Leap Delay", "Terminal Trigger Bot")
         this.registerListener("Open Gui Editor", (curr) => {
             Client.currentGui.close()
@@ -88,11 +92,90 @@ class config {
     disableAfterStart = false
 
 
+    @SwitchProperty({
+        name: "Auto Term",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms"
+    })
+    autoTerm = false
+
+    @SliderProperty({
+        name: "Auto Term Delay",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms",
+        min: 100,
+        max: 200
+    })
+    autoTermDelay = 150;
+
+    @SliderProperty({
+        name: "Auto Term FC Delay",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms",
+        min: 350,
+        max: 500
+    })
+    autoTermFCDelay = 350;
+
+    @SliderProperty({
+        name: "Auto Term Break Threshold",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms",
+        min: 500,
+        max: 1000
+    })
+    autoTermBreakThres = 500;
+
+
+    @SwitchProperty({
+        name: "Auto Melody",
+        description: "",
+        category: "Terminals",
+        subcategory: "Melody"
+    })
+    autoMelody = false
+
+    @SelectorProperty({
+        name: "Melody Skip On",
+        description: "",
+        category: "Terminals",
+        subcategory: "Melody",
+        options: ["None", "Edges", "All"]
+    })
+    melodySkip = 0;
+
+    @SwitchProperty({
+        name: "Don't Skip First Slot",
+        description: "",
+        category: "Terminals",
+        subcategory: "Melody"
+    })
+    noSkipFirst = false
+
+    @SwitchProperty({
+        name: "Only skip two on open",
+        description: "",
+        category: "Terminals",
+        subcategory: "Melody"
+    })
+    onlySkip2 = false
+
+    @SwitchProperty({
+        name: "Send Terminal Time Taken",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms"
+    })
+    sendTermTime = false
 
     @SwitchProperty({
         name: "Terminal Trigger Bot",
         description: "",
-        category: "Auto Terms",
+        category: "Terminals",
         subcategory: "Trigger Bot"
     })
     terminalTB = false
@@ -100,7 +183,7 @@ class config {
     @SliderProperty({
         name: "Terminal TB Leap Delay",
         description: "Delay for when it should start clicking after leaping (it is in mS so 1000 = 1 second)",
-        category: "Auto Terms",
+        category: "Terminals",
         subcategory: "Trigger Bot",
         min: 1,
         max: 2000,
@@ -111,7 +194,7 @@ class config {
     @SwitchProperty({
         name: "Terminal Highlight",
         description: "Highlight the Box of the Terminal when right clicking",
-        category: "Auto Terms",
+        category: "Terminals",
         subcategory: "Highlight"
     })
     terminalTBHighlight = false
@@ -143,13 +226,13 @@ class config {
     })
     customPrefix = 0;
 
-    @SwitchProperty({
-        name: "More legit right clicks???",
-        description: "This might just be schitzo idk, use it if you feel more safe",
-        category: "Settings",
-        subcategory: "Clicks"
-    })
-    legitClicks = false
+    // @SwitchProperty({
+    //     name: "More legit right clicks???",
+    //     description: "This might just be schitzo idk, use it if you feel more safe",
+    //     category: "Settings",
+    //     subcategory: "Clicks"
+    // })
+    // legitClicks = false
 
 }
 

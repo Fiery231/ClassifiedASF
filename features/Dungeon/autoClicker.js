@@ -1,6 +1,6 @@
 import { chat, leftClick } from "../../util/utils"
 
-
+// not usable yet, barely ported
 
 register("clicked", (mouseX, mouseY, button, isButtonDown) => {
     if (button != 0) return

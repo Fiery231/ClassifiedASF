@@ -1,5 +1,6 @@
+import { registerPacketChat } from "../../PrivateASF-Fabric/util/Events"
 import { CloseScreenS2CPacket, CloseHandledScreenC2SPacket, OpenScreenS2CPacket, ClickSlotC2SPacket, ScreenHandlerSlotUpdateS2CPacket, chat, InventoryScreen, PlayerInteractEntityC2SPacket, CommonPingS2CPacket } from "./utils"
-
+import c from "../config"
 const Terminals = {
     NUMBERS: { id: 0, regex: /^Click in order!$/, slotCount: 35 },
     COLORS: { id: 1, regex: /^Select all the (.+?) items!$/, slotCount: 53 },
@@ -44,6 +45,7 @@ export default new class TerminalUtils {
         this.solutionLength = -1;
         this.lastWindowID = -52345234532;
         this.lastInteract = 0;
+        this.clickedIndex = []
 
         register("packetReceived", (packet, event) => {
             if (!(packet instanceof OpenScreenS2CPacket)) return
@@ -118,7 +120,6 @@ export default new class TerminalUtils {
         
 
         register("packetSent", () => {
-            if (!this.inTerm) return;
             this.inTerm = false
             //chat(`Terminal &d${this.currentTitle} &7completed in &d${(Date.now() - this.initialOpen) / 1000}&7s`)
             this._reloadTerm()
@@ -127,14 +128,14 @@ export default new class TerminalUtils {
         register("packetReceived", () => {
             if (!this.inTerm) return;
             this.inTerm = false
-            chat(`Terminal &d${this.currentTitle} &7completed in &d${(Date.now() - this.initialOpen) / 1000}&7s`)
+            if (c.sendTermTime) chat(`&d${this.currentTitle} &7took &d${(Date.now() - this.initialOpen) / 1000}&7s`)
             this._reloadTerm()
         }).setFilteredClass(CloseScreenS2CPacket)
 
         register("packetSent", (packet, event) => {
             if (!this.inTerm) return;
             if (this.terminalID == 5) return;
-            if (Date.now() - this.initialOpen < 380 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) cancel(event)
+            if (Date.now() - this.initialOpen < 300 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) cancel(event)
         }).setFilteredClass(ClickSlotC2SPacket)
 
         register("packetSent", (packet, event) => {
@@ -151,9 +152,9 @@ export default new class TerminalUtils {
             this.lastInteract--
         }).setFilteredClass(CommonPingS2CPacket)
 
-        register("chat", () => {
-            this.lastInteract = 0
-        }).setCriteria("This Terminal doesn't seem to be responsive at the moment.")
+        registerPacketChat((msg) => {
+            if (msg.includes("This Terminal doesn't seem to be responsive at the moment.")) this.lastInteract = 0
+        })
 
         register("packetReceived", (packet, event) => {
             const title = packet.getName().getString()
@@ -192,6 +193,7 @@ export default new class TerminalUtils {
         this.currentTitle = ""
         this.lastWindowID = -52345234532
         this.inTerm = false
+        this.clickedIndex = []
     }
 
 
@@ -240,7 +242,7 @@ export default new class TerminalUtils {
 
                 let matchLetter = match[1].toLowerCase();
 
-                solution = this.currentItems.filter(item => item[3].getName().toLowerCase().removeFormatting().startsWith(matchLetter) && !item[2]?.hasGlint()).map(item => [item[0], item[1], 0]);
+                solution = this.currentItems.filter(item => item[3].getName().removeFormatting().toLowerCase().startsWith(matchLetter) && !this.clickedIndex.includes(item[1]) /*!item[2]?.hasGlint()*/).map(item => [item[0], item[1], 0]);
 
                 break;
 

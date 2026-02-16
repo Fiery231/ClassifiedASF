@@ -1,0 +1,125 @@
+import c from "../../config"
+import terminalUtils from "../../util/terminalUtils"
+import { chat, ClickSlotC2SPacket, CloseScreenS2CPacket, InventoryScreen, OpenScreenS2CPacket, ScreenHandlerSlotUpdateS2CPacket } from "../../util/utils";
+import { playSound } from "../../../PrivateASF-Fabric/util/utils"
+
+let lastClickTime
+let clickedWindow = false;
+let firstClick
+let lastWindowId = -1;
+let pendingSlot = -1;
+
+const main = register('renderworld', () => {
+    if (!c.autoTerm) return;
+
+    let currentDelay = (c.autoTermDelay ?? 150)
+    const fcDelay = (c.autoTermFCDelay ?? 400)
+    const breakThreshold = (c.autoTermBreakThres ?? 500)
+
+    const randomFactor = 1 + (Math.random() * 0.05) + (Math.sin(Date.now() / 300) * 0.03) + (Math.random() * Math.random() * 0.1);
+
+    currentDelay *= randomFactor
+
+    if (firstClick && (Date.now() - lastClickTime < fcDelay)) return;
+    if (Date.now() - lastClickTime < currentDelay) return
+    if (Date.now() - lastClickTime > breakThreshold) clickedWindow = false
+
+    if (!terminalUtils.isInTerm() || clickedWindow) return;
+
+    const Solution = terminalUtils.getSolution();
+
+    if (!Solution || !Solution.length) return;
+
+    const currentClick = Solution.shift()
+
+    if (Player.getContainer() && lastWindowId != -1) {
+        const click = currentClick[2] === 0 ? "MIDDLE" : "RIGHT"
+        pendingSlot = currentClick[1]
+        Player.getContainer().click(currentClick[1], false, click)
+        lastClickTime = Date.now()
+        clickedWindow = true
+        firstClick = false;
+    }
+}).unregister()
+
+register('step', () => {
+    if (!terminalUtils.isInTerm()) {
+        firstClick = true
+        lastClickTime = Date.now()
+        lastWindowId = -1
+        pendingSlot = -1
+    }
+})
+
+register('packetReceived', (p, e) => {
+    clickedWindow = false
+    lastWindowId = p.getSyncId()
+    main.register()
+}).setFilteredClass(OpenScreenS2CPacket)
+
+register("packetReceived", () => {
+    main.unregister()
+    firstClick = true
+    lastClickTime = Date.now()
+    lastWindowId = -1
+    pendingSlot = -1
+}).setFilteredClass(CloseScreenS2CPacket)
+
+register('packetReceived', (packet, event) => {
+    if (!terminalUtils.isInTerm()) return
+
+    if (packet.getSyncId() !== lastWindowId) return;
+    if (pendingSlot === -1) return;
+    lastWindowId = packet.getSyncId()
+    if (packet.getSlot() == pendingSlot) {
+        terminalUtils.clickedIndex.push(pendingSlot)
+        pendingSlot = -1;
+    }
+}).setFilteredClass(ScreenHandlerSlotUpdateS2CPacket)
+
+register("guiMouseClick", (x, y, button, isPressed, gui, event) => {
+    if (!c.autoTerm) return
+    if (!terminalUtils.isInTerm()) return
+    if (!gui.class.toString().includes("class_476")) return
+    cancel(event)
+    chat("You are in a terminal!")
+    if (isPressed) playSound("random.orb", 1, 0.5)
+})
+
+register("guiKey", (char, keyCode, gui, event) => { // Schizo check #2
+    if (!c.autoTerm) return
+    if (!terminalUtils.isInTerm()) return
+    if (!gui.class.toString().includes("class_476")) return
+
+    const mc = Client.getMinecraft()
+    const hotbarKeys = mc.options.hotbarKeys.map(key => key.getDefaultKey().getCode())
+
+    if (!hotbarKeys.includes(keyCode)) return
+
+    cancel(event)
+    chat("You are in a terminal!")
+    playSound("random.orb", 1, 0.5)
+})
+
+register("packetSent", (packet, event) => {
+    if (!terminalUtils.isInTerm()) return;
+    if (terminalUtils.getTermID() == 5) return;
+    const startTime = terminalUtils.initialOpen
+    if (Date.now() - startTime < 250 || Date.now() - startTime > 6000 || startTime == 0) {
+        main.unregister()
+        chat("Low first click or server is bad idk. stopping auto, reopen to retry")
+        cancel(event)
+    }
+}).setFilteredClass(ClickSlotC2SPacket)
+
+register("packetReceived", (packet, event) => {
+    if (!(packet instanceof OpenScreenS2CPacket)) return
+    try {
+        const windowTitle = packet.getName().getString();
+        if (windowTitle) return;
+
+    } catch (e) {
+        main.unregister()
+        chat("hi something bad happened please ct load")
+    }
+}).setFilteredClass(OpenScreenS2CPacket)

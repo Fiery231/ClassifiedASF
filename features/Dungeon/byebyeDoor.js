@@ -1,5 +1,6 @@
 import c from "../../config"
 import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils"
+import { registerPacketChat } from "../../../PrivateASF-Fabric/util/Events"
 const MinecraftClient = Java.type("net.minecraft.client.MinecraftClient")
 const Blocks = Java.type("net.minecraft.block.Blocks")
 
@@ -40,15 +41,14 @@ const worldLoad = register("worldLoad", () => {
     startScanning = true
 }).unregister()
 
-register("chat", (msg) => {
-    const unformatted = msg.removeFormatting()
+registerPacketChat((msg) => {
     if (c.disableAfterStart) {
-        if (unformatted.includes("[NPC] Mort: Here, I found this map when I first entered the dungeon.")) startScanning = false;
+        if (msg.includes("[NPC] Mort: Here, I found this map when I first entered the dungeon.")) startScanning = false;
     }
     else {
-        if (unformatted.includes("The BLOOD DOOR has been opened!")) startScanning = false;
+        if (msg.includes("The BLOOD DOOR has been opened!")) startScanning = false;
     }
-}).setCriteria("${msg}")
+})
 
 
 register("tick", () => {

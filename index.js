@@ -19,7 +19,7 @@ Client.scheduleTask(0, () => {
     }
 })
 
-const IGNORED_FEATURES = ["autoTerms", "autoMelody", "autoClicker"];
+const IGNORED_FEATURES = ["autoClicker"];
 
 const FEATURE_FOLDERS = [
     "Dungeon",
@@ -72,7 +72,7 @@ export default function ClassifiedASF() {
     });
 
     ChatLib.chat(`${Prefix}&aModule Loaded! (&f${loadedCount}&a features)`);
-
+    ChatLib.chat(`${Prefix} &cIDK IF ANYTHING BANS ATM, BE CAREFUL`);
 
 
     register("command", () => {
@@ -83,7 +83,7 @@ export default function ClassifiedASF() {
         setTimeout(() => {
             activategui()
         }, 25);
-    }).setName("cagui")
+    }).setName("clgui")
 
-    
+
 }

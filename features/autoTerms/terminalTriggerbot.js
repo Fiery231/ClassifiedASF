@@ -1,7 +1,10 @@
 import c from "../../config"
 import terminalUtils from "../../util/terminalUtils"
-import { chat, CommonPingS2CPacket, OpenScreenS2CPacket, PlayerInteractEntityC2SPacket, PlayerPositionLookS2CPacket, rightClick } from "../../util/utils"
+import { chat, CloseScreenS2CPacket, CommonPingS2CPacket, OpenScreenS2CPacket, PlayerInteractEntityC2SPacket, PlayerPositionLookS2CPacket, rightClick } from "../../util/utils"
 import RenderUtils from "../../../PrivateASF-Fabric/util/renderUtils"
+import { registerPacketChat } from "../../../PrivateASF-Fabric/util/Events"
+import { ArmorStand } from "../../../PrivateASF-Fabric/util/utils"
+
 
 let lastClick = 0
 let lastS08 = 0
@@ -11,9 +14,11 @@ register("packetReceived", (packet, event) => {
     if (title == ("Click the button on time!")) lastClick = 0
 }).setFilteredClass(OpenScreenS2CPacket)
 
-register("chat", () => {
-    lastClick = 0
-}).setCriteria("This Terminal doesn't seem to be responsive at the moment.")
+
+registerPacketChat((message) => {
+    if (message == ("This Terminal doesn't seem to be responsive at the moment.")) lastClick = 0
+})
+
 
 register("packetReceived", (packet, event) => {
     if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0 || lastClick == 0) return;
@@ -33,7 +38,7 @@ register("tick", () => {
 
 
     if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") {
-        rightClick(false)
+        rightClick(false, true)
         lastClick = 20;
     }
 
@@ -92,3 +97,42 @@ register("packetSent", (packet) => {
     renderTriggerRegistered = true;
 
 }).setFilteredClass(PlayerInteractEntityC2SPacket);
+
+register("tick", () => {
+    if (!c.terminalTBHighlight) return;
+    if (!World.isLoaded()) return;
+
+    const px = Player.getX();
+    const py = Player.getY();
+    const pz = Player.getZ();
+
+    const armorStands = World.getAllEntitiesOfType(ArmorStand);
+
+    const now = Date.now();
+
+    armorStands.forEach(entity => {
+        if (entity.getName()?.removeFormatting() !== "Inactive Terminal") return;
+
+        const dx = entity.getX() - px;
+        const dy = entity.getY() - py;
+        const dz = entity.getZ() - pz;
+
+        if ((dx * dx + dy * dy + dz * dz) > 49) return; // 5 blocks
+
+        const position = [entity.getX(), entity.getY(), entity.getZ()];
+        const key = position.join();
+
+        if (highlights[key]) return; // already highlighted
+
+        highlights[key] = {
+            start: now,
+            end: now + 1000,
+            position
+        };
+
+        if (!renderTriggerRegistered) {
+            renderTrigger.register();
+            renderTriggerRegistered = true;
+        }
+    });
+});

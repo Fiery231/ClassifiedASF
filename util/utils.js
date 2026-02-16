@@ -38,17 +38,17 @@ export function leftClick() {
 }
 
 
-export function rightClick(shouldSwing = false) {
-    const c = ConfigModule.default;
-    if (c && c.legitClicks) {
+export function rightClick(shouldSwing = false, legitClick = false) {
+    if (legitClick) {
         Client.getMinecraft().options["useKey"].setPressed(true)
         Client.scheduleTask(1, () => Client.getMinecraft().options["useKey"].setPressed(false))
     }
     else {
         const mc = Client.getMinecraft()
         const hit = mc.crosshairTarget
-
-        if (hit && hit.getType().toString() === "BLOCK") mc.interactionManager.interactBlock(mc.player, Hand.field_5808, hit)
+        if (!hit) return;
+        if (hit.getType().toString() === "BLOCK") mc.interactionManager.interactBlock(mc.player, Hand.field_5808, hit)
+        //else if (hit.getType().toString() === "ENTITY") mc.interactionManager.interactEntity(mc.player, hit.getEntity(), Hand.field_5808)
         else mc.interactionManager.interactItem(mc.player, Hand.field_5808)
 
         if (shouldSwing) mc.player.swingHand(Hand.field_5808)
