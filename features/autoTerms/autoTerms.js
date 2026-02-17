@@ -33,7 +33,7 @@ const main = register('renderworld', () => {
     const currentClick = Solution.shift()
 
     if (Player.getContainer() && lastWindowId != -1) {
-        const click = currentClick[2] === 0 ? "LEFT" : "RIGHT"
+        const click = currentClick[2] === 0 ? "MIDDLE" : "RIGHT"
         pendingSlot = currentClick[1]
         Player.getContainer().click(currentClick[1], false, click)
         //Client.getMinecraft().interactionManager.clickSlot(lastWindowId, currentClick[1], 2, net.minecraft.screen.slot.SlotActionType.CLONE, Client.getMinecraft().player)
