@@ -110,6 +110,6 @@ register("packetReceived", (packet, event) => {
 
     } catch (e) {
         main.unregister()
-        chat("hi something bad happened please ct load")
+        chat("hi something bad happened")
     }
 }).setFilteredClass(OpenScreenS2CPacket)

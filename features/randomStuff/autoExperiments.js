@@ -65,30 +65,30 @@ function solveChronomatron() {
 }
 
 function solveUltraSequencer() {
-        const maxUltraSequencer = c.AEmaxXP ? 20 : 8 - c.AEserumCount;
-        const items = Player.getContainer().getItems()
-        if (items[49]?.getType().getName().includes('Clock')) hasAdded = false
-        if (!hasAdded && items[49]?.getType().getName().includes('Glowstone')) {
-            if (!items[44]) return
-            ultrasequencerOrder = []
-            for (let i = 9; i <= 44; i++) {
-                let item = items[i]
-                if (isDye(item)) ultrasequencerOrder[item.getStackSize() - 1] = i
-                hasAdded = true;
-                clicks = 0;
-                if (ultrasequencerOrder.length > maxUltraSequencer && c.AEautoClose && !closing) {
-                    closing = true;
-                    Client.getMinecraft().currentScreen.close()
-                }
+    const maxUltraSequencer = c.AEmaxXP ? 20 : 8 - c.AEserumCount;
+    const items = Player.getContainer().getItems()
+    if (items[49]?.getType().getName().includes('Clock')) hasAdded = false
+    if (!hasAdded && items[49]?.getType().getName().includes('Glowstone')) {
+        if (!items[44]) return
+        ultrasequencerOrder = []
+        for (let i = 9; i <= 44; i++) {
+            let item = items[i]
+            if (isDye(item)) ultrasequencerOrder[item.getStackSize() - 1] = i
+            hasAdded = true;
+            clicks = 0;
+            if (ultrasequencerOrder.length > maxUltraSequencer && c.AEautoClose && !closing) {
+                closing = true;
+                Client.getMinecraft().currentScreen.close()
             }
         }
-
-        if (items[49]?.getType().getName().includes('Clock') && ultrasequencerOrder[clicks] && Date.now() - lastClick > c.AEclickDelay) {
-            Player.getContainer().click(ultrasequencerOrder[clicks], false, 'MIDDLE')
-            lastClick = Date.now()
-            clicks++
-        }
     }
+
+    if (items[49]?.getType().getName().includes('Clock') && ultrasequencerOrder[clicks] && Date.now() - lastClick > c.AEclickDelay) {
+        Player.getContainer().click(ultrasequencerOrder[clicks], false, 'MIDDLE')
+        lastClick = Date.now()
+        clicks++
+    }
+}
 
 function hasGlint(ctItem) {
     const nbt = ctItem.getNBT();
