@@ -1,6 +1,6 @@
 import c from "../../config"
 import terminalUtils from "../../util/terminalUtils"
-import { chat, ClickSlotC2SPacket, CloseScreenS2CPacket, InventoryScreen, OpenScreenS2CPacket, ScreenHandlerSlotUpdateS2CPacket } from "../../util/utils";
+import { chat, CloseScreenS2CPacket, OpenScreenS2CPacket, ScreenHandlerSlotUpdateS2CPacket } from "../../util/utils";
 import { playSound } from "../../../PrivateASF-Fabric/util/utils"
 
 let lastClickTime

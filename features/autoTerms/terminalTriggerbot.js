@@ -98,41 +98,41 @@ register("packetSent", (packet) => {
 
 }).setFilteredClass(PlayerInteractEntityC2SPacket);
 
-register("tick", () => {
-    if (!c.terminalTBHighlight) return;
-    if (!World.isLoaded()) return;
+// register("tick", () => {
+//     if (!c.terminalTBHighlight) return;
+//     if (!World.isLoaded()) return;
 
-    const px = Player.getX();
-    const py = Player.getY();
-    const pz = Player.getZ();
+//     const px = Player.getX();
+//     const py = Player.getY();
+//     const pz = Player.getZ();
 
-    const armorStands = World.getAllEntitiesOfType(ArmorStand);
+//     const armorStands = World.getAllEntitiesOfType(ArmorStand);
 
-    const now = Date.now();
+//     const now = Date.now();
 
-    armorStands.forEach(entity => {
-        if (entity.getName()?.removeFormatting() !== "Inactive Terminal") return;
+//     armorStands.forEach(entity => {
+//         if (entity.getName()?.removeFormatting() !== "Inactive Terminal") return;
 
-        const dx = entity.getX() - px;
-        const dy = entity.getY() - py;
-        const dz = entity.getZ() - pz;
+//         const dx = entity.getX() - px;
+//         const dy = entity.getY() - py;
+//         const dz = entity.getZ() - pz;
 
-        if ((dx * dx + dy * dy + dz * dz) > 49) return; // 5 blocks
+//         if ((dx * dx + dy * dy + dz * dz) > 49) return; // 5 blocks
 
-        const position = [entity.getX(), entity.getY(), entity.getZ()];
-        const key = position.join();
+//         const position = [entity.getX(), entity.getY(), entity.getZ()];
+//         const key = position.join();
 
-        if (highlights[key]) return; // already highlighted
+//         if (highlights[key]) return; // already highlighted
 
-        highlights[key] = {
-            start: now,
-            end: now + 1000,
-            position
-        };
+//         highlights[key] = {
+//             start: now,
+//             end: now + 1000,
+//             position
+//         };
 
-        if (!renderTriggerRegistered) {
-            renderTrigger.register();
-            renderTriggerRegistered = true;
-        }
-    });
-});
+//         if (!renderTriggerRegistered) {
+//             renderTrigger.register();
+//             renderTriggerRegistered = true;
+//         }
+//     });
+// });
