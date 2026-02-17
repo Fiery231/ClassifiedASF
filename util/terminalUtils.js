@@ -133,9 +133,13 @@ export default new class TerminalUtils {
         }).setFilteredClass(CloseScreenS2CPacket)
 
         register("packetSent", (packet, event) => {
+            //console.log("syncId: " + packet.syncId() + " slot: " + packet.slot() + " button: " + packet.button() + " actionType: " + packet.actionType())
             if (!this.inTerm) return;
             if (this.terminalID == 5) return;
-            if (Date.now() - this.initialOpen < 300 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) cancel(event)
+            if (Date.now() - this.initialOpen < 300 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) {
+                cancel(event)
+                ChatLib.chat("First Click Protection")
+            }
         }).setFilteredClass(ClickSlotC2SPacket)
 
         register("packetSent", (packet, event) => {

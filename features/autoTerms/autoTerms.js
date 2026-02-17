@@ -33,14 +33,18 @@ const main = register('renderworld', () => {
     const currentClick = Solution.shift()
 
     if (Player.getContainer() && lastWindowId != -1) {
-        const click = currentClick[2] === 0 ? "MIDDLE" : "RIGHT"
+        const click = currentClick[2] === 0 ? "LEFT" : "RIGHT"
         pendingSlot = currentClick[1]
         Player.getContainer().click(currentClick[1], false, click)
+        //Client.getMinecraft().interactionManager.clickSlot(lastWindowId, currentClick[1], 2, net.minecraft.screen.slot.SlotActionType.CLONE, Client.getMinecraft().player)
+        //console.log("sent syncId: " + lastWindowId + " slot: " + currentClick[1] + " button: 2 Actiontype:Clone")
         lastClickTime = Date.now()
         clickedWindow = true
         firstClick = false;
     }
 }).unregister()
+
+
 
 register('step', () => {
     if (!terminalUtils.isInTerm()) {
@@ -50,12 +54,6 @@ register('step', () => {
         pendingSlot = -1
     }
 })
-
-register('packetReceived', (p, e) => {
-    clickedWindow = false
-    lastWindowId = p.getSyncId()
-    main.register()
-}).setFilteredClass(OpenScreenS2CPacket)
 
 register("packetReceived", () => {
     main.unregister()
@@ -101,22 +99,14 @@ register("guiKey", (char, keyCode, gui, event) => { // Schizo check #2
     playSound("random.orb", 1, 0.5)
 })
 
-register("packetSent", (packet, event) => {
-    if (!terminalUtils.isInTerm()) return;
-    if (terminalUtils.getTermID() == 5) return;
-    const startTime = terminalUtils.initialOpen
-    if (Date.now() - startTime < 250 || Date.now() - startTime > 6000 || startTime == 0) {
-        main.unregister()
-        chat("Low first click or server is bad idk. stopping auto, reopen to retry")
-        cancel(event)
-    }
-}).setFilteredClass(ClickSlotC2SPacket)
-
 register("packetReceived", (packet, event) => {
     if (!(packet instanceof OpenScreenS2CPacket)) return
     try {
         const windowTitle = packet.getName().getString();
-        if (windowTitle) return;
+        clickedWindow = false
+        lastWindowId = packet.getSyncId()
+        main.register()
+        if (!windowTitle) return chat("no title???");
 
     } catch (e) {
         main.unregister()

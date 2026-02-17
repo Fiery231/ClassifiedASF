@@ -16,7 +16,7 @@ import {
 
 @Vigilant("ClassifiedASF/data", "§5ClassifiedASF", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Dungeon", "Auto Terms", 'GUI', "Settings"];
+        const categories = ["Dungeon", "Terminals", "Random", 'GUI', "Settings"];
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     }
 })
@@ -130,6 +130,13 @@ class config {
     })
     autoTermBreakThres = 500;
 
+    @SwitchProperty({
+        name: "Send Terminal Time Taken",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms"
+    })
+    sendTermTime = false
 
     @SwitchProperty({
         name: "Auto Melody",
@@ -165,14 +172,6 @@ class config {
     onlySkip2 = false
 
     @SwitchProperty({
-        name: "Send Terminal Time Taken",
-        description: "",
-        category: "Terminals",
-        subcategory: "AutoTerms"
-    })
-    sendTermTime = false
-
-    @SwitchProperty({
         name: "Terminal Trigger Bot",
         description: "",
         category: "Terminals",
@@ -200,6 +199,50 @@ class config {
     terminalTBHighlight = false
 
 
+
+    
+    @SwitchProperty({
+        name: "Toggle Auto Experiments",
+        description: "",
+        category: "Random",
+        subcategory: "Experiments"
+    })
+    autoExperiment = false
+
+    @SwitchProperty({
+        name: "AE Get Max XP",
+        description: "",
+        category: "Random",
+        subcategory: "Experiments"
+    })
+    AEmaxXP = false
+
+    @SliderProperty({
+        name: "AE Serum Count",
+        description: "",
+        category: "Random",
+        subcategory: "Experiments",
+        min: 0,
+        max: 3
+    })
+    AEserumCount = 0;
+
+    @SwitchProperty({
+        name: "AE Auto Close",
+        description: "",
+        category: "Random",
+        subcategory: "Experiments"
+    })
+    AEautoClose = false
+
+    @SliderProperty({
+        name: "AE Click Delay",
+        category: "Random",
+        subcategory: "Experiments",
+        min: 120,
+        max: 500
+    })
+    AEclickDelay = 150;
 
     @SwitchProperty({
         name: "Open Gui Editor",

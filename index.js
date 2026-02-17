@@ -23,7 +23,8 @@ const IGNORED_FEATURES = ["autoClicker"];
 
 const FEATURE_FOLDERS = [
     "Dungeon",
-    "autoTerms"
+    "autoTerms",
+    "randomShit"
 ];
 
 const moduleFolder = new File(`./config/ChatTriggers/modules/${MODULE_NAME}`);
