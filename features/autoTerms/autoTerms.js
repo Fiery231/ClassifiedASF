@@ -80,8 +80,10 @@ register("guiMouseClick", (x, y, button, isPressed, gui, event) => {
     if (!terminalUtils.isInTerm()) return
     if (!gui.class.toString().includes("class_476")) return
     cancel(event)
-    chat("You are in a terminal!")
-    if (isPressed) playSound("random.orb", 1, 0.5)
+    if (isPressed) {
+        chat("You are in a terminal!")
+        playSound("random.orb", 1, 0.5)
+    }
 })
 
 register("guiKey", (char, keyCode, gui, event) => { // Schizo check #2
