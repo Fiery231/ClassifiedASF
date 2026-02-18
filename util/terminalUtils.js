@@ -145,26 +145,27 @@ export default new class TerminalUtils {
         register("packetSent", (packet, event) => {
             if (!Player.lookingAt() || Player.lookingAt() instanceof Block || Player.lookingAt().getName().removeFormatting() != "Inactive Terminal") return;
             
-            if (this.lastInteract > 0 || this.isInTerm()) cancel(event)
-            else this.lastInteract = 10
+            //if (this.lastInteract > 0 || this.isInTerm()) cancel(event)
+            //else this.lastInteract = 10
+            if (this.isInTerm()) cancel(event)
 
             // Some safety for term triggerbot I suppose
         }).setFilteredClass(PlayerInteractEntityC2SPacket)
 
-        register("packetReceived", (packet) => {
-            if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0 || this.lastInteract == 0) return;
-            this.lastInteract--
-        }).setFilteredClass(CommonPingS2CPacket)
+        // register("packetReceived", (packet) => {
+        //     if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0 || this.lastInteract == 0) return;
+        //     this.lastInteract--
+        // }).setFilteredClass(CommonPingS2CPacket)
 
-        registerPacketChat((msg) => {
-            if (msg.includes("This Terminal doesn't seem to be responsive at the moment.")) this.lastInteract = 0
-        })
+        // registerPacketChat((msg) => {
+        //     if (msg.includes("This Terminal doesn't seem to be responsive at the moment.")) this.lastInteract = 0
+        // })
 
-        register("packetReceived", (packet, event) => {
-            const title = packet.getName().getString()
-            this.currentTitle = title
-            if (this.currentTitle.includes("Click the button on time!")) this.lastInteract = 0
-        }).setFilteredClass(OpenScreenS2CPacket)
+        // register("packetReceived", (packet, event) => {
+        //     const title = packet.getName().getString()
+        //     this.currentTitle = title
+        //     if (this.currentTitle.includes("Click the button on time!")) this.lastInteract = 0
+        // }).setFilteredClass(OpenScreenS2CPacket)
 
         register("worldLoad", () => {
             this.inTerm = false;

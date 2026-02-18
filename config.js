@@ -105,7 +105,7 @@ class config {
         description: "",
         category: "Terminals",
         subcategory: "AutoTerms",
-        min: 100,
+        min: 20,
         max: 200
     })
     autoTermDelay = 150;

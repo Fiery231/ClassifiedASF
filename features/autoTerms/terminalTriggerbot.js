@@ -11,12 +11,12 @@ let lastS08 = 0
 
 register("packetReceived", (packet, event) => {
     const title = packet?.getName()?.getString()
-    if (title == ("Click the button on time!")) lastClick = 0
+    if (title == "Click the button on time!") lastClick = 0
 }).setFilteredClass(OpenScreenS2CPacket)
 
 
 registerPacketChat((message) => {
-    if (message == ("This Terminal doesn't seem to be responsive at the moment.")) lastClick = 0
+    if (message == "This Terminal doesn't seem to be responsive at the moment.") lastClick = 0
 })
 
 

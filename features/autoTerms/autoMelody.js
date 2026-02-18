@@ -105,7 +105,6 @@ register("packetReceived", (packet, event) => {
     const windowId = packet.getSyncId()
     if (slot < 0) return;
     if (slot >= windowSize) return;
-    if (cwid != windowId) return chat("this shouldn't happen???")
     if (itemStack != null) {
         if (itemStack.toString().includes("minecraft:air")) return;
         const item = new Item(itemStack)
