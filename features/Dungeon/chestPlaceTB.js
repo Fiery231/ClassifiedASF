@@ -34,3 +34,12 @@ const chestTB = register("renderWorld", () => {
 }).unregister()
 
 dungeonUtils.registerWhenInDungeon(chestTB)
+
+if (c.chestPlaceTB) {
+    chestTB.register()
+}
+
+c.registerListener("Chest TriggerBot for P3", (curr) => {
+    if (curr) chestTB.register()
+    else chestTB.unregister()
+})

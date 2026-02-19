@@ -57,7 +57,7 @@ function getFrames() {
 }
 
 const alignSolver1 = register("tick", () => {
-    if (dungeonUtils.getPhase() != 3) return;
+    if (!dungeonUtils.inBoss) return;
     clicksRemaining = {}
 
     const dist = Math.sqrt(Math.pow(Player.getX() - 0, 2) + Math.pow(Player.getZ() - 77, 2));
@@ -84,7 +84,7 @@ const alignSolver1 = register("tick", () => {
 }).unregister()
 
 const alignSolver2 = register("packetSent", (packet, event) => {
-    if (dungeonUtils.getPhase() != 3) return;
+    if (!dungeonUtils.inBoss) return;
     const entity = World.getWorld().getEntityById(packet.entityId);
     if (!entity || !(entity instanceof EntityItemFrame)) return;
 
@@ -120,7 +120,7 @@ const alignSolver2 = register("packetSent", (packet, event) => {
 
 
 const arrowAlignTB = register("step", () => {
-    if (dungeonUtils.getPhase() != 3) return
+    if (!dungeonUtils.inBoss) return
     if ((Player.isSneaking()) || Object.keys(clicksRemaining).length == 0) return;
 
     const looking = Player.lookingAt();
@@ -143,7 +143,7 @@ const arrowAlignTB = register("step", () => {
 
 
 const alignSolver3 = register("renderWorld", () => {
-    if (Object.keys(clicksRemaining).length === 0 || dungeonUtils.getPhase() !== 3) return;
+    if (Object.keys(clicksRemaining).length === 0 || !dungeonUtils.inBoss) return;
 
     Object.keys(clicksRemaining).forEach(indexString => {
         const index = parseInt(indexString);
