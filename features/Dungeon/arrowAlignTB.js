@@ -1,3 +1,14 @@
+import c from "../../config"
+import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils"
+import { chat, PlayerInteractEntityC2SPacket, rightClick } from "../../util/utils";
+import RenderUtils from "../../../PrivateASF-Fabric/util/renderUtils";
+const EntityItemFrame = Java.type("net.minecraft.entity.decoration.ItemFrameEntity")
+const recentClickTimestamps = {};
+const frameGridCorner = { x: -2, y: 120, z: 75 };
+let clicksRemaining = {};
+let currentFrameRotations = Array(25).fill(-1);
+let targetSolution = null;
+
 const possibleSolutions = [
     [7, 7, -1, -1, -1, 1, -1, -1, -1, -1, 1, 3, 3, 3, 3, -1, -1, -1, -1, 1, -1, -1, -1, 7, 1],
     [-1, -1, 7, 7, 5, -1, 7, 1, -1, 5, -1, -1, -1, -1, -1, -1, 7, 5, -1, 1, -1, -1, 7, 7, 1],
@@ -23,7 +34,7 @@ function calculateClicksNeeded(current, target) {
 }
 
 function getFrames() {
-    const itemFrames = World.getAllEntitiesOfType(net.minecraft.entity.decoration.ItemFrameEntity)
+    const itemFrames = World.getAllEntitiesOfType(EntityItemFrame)
         .filter(f => {
             const stack = f.toMC().getHeldItemStack()
             return stack != null && !stack.isEmpty() && stack.getItem().toString() == "minecraft:arrow"
@@ -40,81 +51,194 @@ function getFrames() {
     })
 
     return Array(25).fill(0).map((_, index) => {
-        const p = getFramePositionFromIndex(index)
-        return map[`${p.x},${p.y},${p.z}`] ?? -1
-    })
+        const p = getFramePositionFromIndex(index);
+        return map[`${p.x},${p.y},${p.z}`] ?? -1;
+    });
 }
 
+const alignSolver1 = register("tick", () => {
+    if (dungeonUtils.getPhase() != 3) return;
+    clicksRemaining = {}
 
-const frameGridCorner = { x: -2, y: 120, z: 75 };
-let clicksRemaining = {};
-let currentFrameRotations = Array(25).fill(-1);
-let targetSolution = null;
-import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils"
-import { PlayerInteractEntityC2SPacket } from "../../util/utils";
-
-register("tick", () => {
-    if (dungeonUtils.currentPhase != 3) return;
-
-    clicksRemaining.clear()
-
-    if (Player.getX() ** 2 + Player.getZ() ** 2 > 200 ** 2) {
-        currentFrameRotations = null
-        targetSolution = null
-        return
+    const dist = Math.sqrt(Math.pow(Player.getX() - 0, 2) + Math.pow(Player.getZ() - 77, 2));
+    if (dist > 200) {
+        currentFrameRotations = null;
+        targetSolution = null;
+        return;
     }
 
     currentFrameRotations = getFrames()
-    
+
     possibleSolutions.forEach(arr => {
         for (let i = 0; i < arr.length; i++) {
-            if ((arr[i] == -1 || currentFrameRotations[i] == -1) && arr[i] !== currentFrameRotations[i]) return;
+            if ((arr[i] === -1 || currentFrameRotations[i] === -1) && arr[i] !== currentFrameRotations[i]) return;
         }
 
-        targetSolution = arr
+        targetSolution = arr;
 
         for (let i = 0; i < arr.length; i++) {
-            let clicks = calculateClicksNeeded(currentFrameRotations[i], arr[i])
-            if (clicks !== 0) clicksRemaining[i] = clicks
+            const needed = calculateClicksNeeded(currentFrameRotations[i], arr[i]);
+            if (needed !== 0) clicksRemaining[i] = needed;
         }
-    })
-})
+    });
+}).unregister()
 
-register("packetSent", (packet, event) => {
-    if (dungeonUtils.currentPhase != 3) return;
+const alignSolver2 = register("packetSent", (packet, event) => {
+    if (dungeonUtils.getPhase() != 3) return;
+    const entity = World.getWorld().getEntityById(packet.entityId);
+    if (!entity || !(entity instanceof EntityItemFrame)) return;
 
-    let entity = packet.getEntity()
-    return ChatLib.chat(entity)
-    if (!(entity instanceof net.minecraft.entity.item.EntityItemFrame)) return
-    if (!entity.func_82335_i() || entity.func_82335_i().getItem() !== net.minecraft.init.Items.arrow) return
+    const MCEntity = new Entity(entity)
+    if (!MCEntity.toMC().getHeldItemStack() || MCEntity.toMC().getHeldItemStack().getItem().toString() !== "minecraft:arrow") return
 
-    let pos = entity.getPosition()
-    let frameIndex = ((pos.getY() - frameGridCorner.y) +
-        (pos.getZ() - frameGridCorner.z) * 5)
+    const pos = [
+        Math.floor(MCEntity.getX()),
+        Math.floor(MCEntity.getY()),
+        Math.floor(MCEntity.getZ())
+    ]
+    let frameIndex = ((pos[1] - frameGridCorner.y) +
+        (pos[2] - frameGridCorner.z) * 5)
 
-    if (pos.getX() !== frameGridCorner.x) return
-    if (frameIndex < 0 || frameIndex > 24) return
 
-    if (!clicksRemaining.hasOwnProperty(frameIndex) &&
-        Player.isSneaking() === invertSneak &&
-        blockWrong) {
-        cancel(event)
-        return
+    if (pos[0] !== frameGridCorner.x || frameIndex < 0 || frameIndex > 24 || currentFrameRotations[frameIndex] === -1) return;
+
+    if (!clicksRemaining.hasOwnProperty(frameIndex) && (Player.isSneaking() == c.arrowAlignInvertSneak) && c.arrowAlignBlockWrong) {
+        ChatLib.chat("canceling")
+        cancel(event);
+        return;
     }
 
-    recentClickTimestamps[frameIndex] = Date.now()
-
-    if (currentFrameRotations) {
-        currentFrameRotations[frameIndex] =
-            (currentFrameRotations[frameIndex] + 1) % 8
-    }
+    recentClickTimestamps[frameIndex] = Date.now();
 
     if (targetSolution) {
-        let needed = calculateClicksNeeded(
-            currentFrameRotations[frameIndex],
-            targetSolution[frameIndex]
-        )
-
-        if (needed === 0) delete clicksRemaining[frameIndex]
+        if (calculateClicksNeeded(currentFrameRotations[frameIndex], targetSolution[frameIndex]) === 0) {
+            delete clicksRemaining[frameIndex];
+        }
     }
-}).setFilteredClass(PlayerInteractEntityC2SPacket)
+
+}).setFilteredClass(PlayerInteractEntityC2SPacket).unregister()
+
+
+const arrowAlignTB = register("step", () => {
+    if (dungeonUtils.getPhase() != 3) return
+    if ((Player.isSneaking()) || Object.keys(clicksRemaining).length == 0) return;
+
+    const looking = Player.lookingAt();
+    if (!looking || !(looking instanceof Entity)) return;
+
+    const mcEntity = looking.toMC();
+    if (!(mcEntity instanceof EntityItemFrame)) return;
+
+    const pos = mcEntity.getBlockPos();
+    const x = Math.floor(pos.getX()), y = Math.floor(pos.getY()), z = Math.floor(pos.getZ());
+
+    const frameIndex = (y - frameGridCorner.y) + (z - frameGridCorner.z) * 5;
+
+    if (x !== frameGridCorner.x || frameIndex < 0 || frameIndex > 24 || currentFrameRotations[frameIndex] === -1) return;
+
+    if (clicksRemaining.hasOwnProperty(frameIndex)) {
+        rightClick(true, false)
+    }
+}).setFps(1000 / (c.arrowAlignDelay ?? 150)).unregister()
+
+
+const alignSolver3 = register("renderWorld", () => {
+    if (Object.keys(clicksRemaining).length === 0 || dungeonUtils.getPhase() !== 3) return;
+
+    Object.keys(clicksRemaining).forEach(indexString => {
+        const index = parseInt(indexString);
+        const clicks = clicksRemaining[index];
+
+        if (clicks === 0) return;
+
+        let colorCode = "§c";
+        if (clicks < 3) {
+            colorCode = "§2";
+        } else if (clicks < 5) {
+            colorCode = "§6";
+        }
+
+
+        const pos = getFramePositionFromIndex(index);
+
+        const renderX = pos.x;
+        const renderY = pos.y + 0.6;
+        const renderZ = pos.z + 0.5;
+
+        RenderUtils.drawText(
+            `${colorCode}${clicks}`,
+            renderX,
+            renderY,
+            renderZ,
+            1,
+            false
+        );
+    });
+}).unregister()
+
+
+if (c.arrowAlignSolver) {
+    alignSolver1.register()
+    alignSolver2.register()
+    alignSolver3.register()
+}
+
+c.registerListener("Arrow Align Solver", (curr) => {
+    clicksRemaining = {}
+    targetSolution = null;
+    if (curr) {
+        alignSolver1.register()
+        alignSolver2.register()
+        alignSolver3.register()
+    }
+    else {
+        alignSolver1.unregister()
+        alignSolver2.unregister()
+        alignSolver3.unregister()
+    }
+})
+
+if (c.arrowAlignTB && c.arrowAlignSolver) {
+    alignSolver1.register()
+    alignSolver2.register()
+    alignSolver3.register()
+}
+
+c.registerListener("Arrow Align TriggerBot", (curr) => {
+    if (curr && c.arrowAlignSolver) arrowAlignTB.register()
+    else arrowAlignTB.unregister()
+})
+
+
+
+
+
+
+// const nearbyFrames = World.getAllEntitiesOfType(EntityItemFrame).filter(frame => {
+
+//     return Player.toMC().distanceTo(frame.toMC()) <= 5;
+// });
+// nearbyFrames.forEach(frame => {
+//     const mcEntity = frame.toMC();
+//     const pos = mcEntity.getBlockPos();
+
+//     const x = Math.floor(pos.getX());
+//     const y = Math.floor(pos.getY());
+//     const z = Math.floor(pos.getZ());
+//     const frameIndex = (y - frameGridCorner.y) + (z - frameGridCorner.z) * 5;
+
+//     if (x === frameGridCorner.x && clicksRemaining.hasOwnProperty(frameIndex)) {
+
+//         const packet = PlayerInteractEntityC2SPacket.interact(
+//             frame.toMC(),
+//             Player.isSneaking(),
+//             Hand.MAIN_HAND
+//         );
+//         chat("sending packet")
+//         Client.sendPacket(packet);
+//     }
+// });
+//const InteractHandler = Java.type("net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket$InteractHandler");
+
+
+// ^^^ this is some align aura and idk if its bans

@@ -48,7 +48,7 @@ export function rightClick(shouldSwing = false, legitClick = false) {
         const hit = mc.crosshairTarget
         if (!hit) return;
         if (hit.getType().toString() === "BLOCK") mc.interactionManager.interactBlock(mc.player, Hand.field_5808, hit)
-        //else if (hit.getType().toString() === "ENTITY") mc.interactionManager.interactEntity(mc.player, hit.getEntity(), Hand.field_5808)
+        else if (hit.getType().toString() === "ENTITY") mc.interactionManager.interactEntity(mc.player, hit.getEntity(), Hand.field_5808)
         else mc.interactionManager.interactItem(mc.player, Hand.field_5808)
 
         if (shouldSwing) mc.player.swingHand(Hand.field_5808)

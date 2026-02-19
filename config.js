@@ -31,6 +31,11 @@ class config {
         this.addDependency("Disable On Dungeon Start", "Bye Bye Door");
         this.addDependency("Custom Color", "Bye Bye Door")
 
+        this.addDependency("Arrow Align TriggerBot", "Arrow Align Solver")
+        this.addDependency("Click Delay", "Arrow Align TriggerBot" && "Arrow Align Solver")
+        this.addDependency("Invert Sneak", "Arrow Align Solver")
+        this.addDependency("Block Wrong Clicks", "Arrow Align Solver")
+
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
         this.addDependency("Only skip two on open", "Auto Melody")
@@ -91,6 +96,57 @@ class config {
     })
     disableAfterStart = false
 
+    @SwitchProperty({
+        name: "Chest TriggerBot for P3",
+        description: "",
+        category: "Dungeon",
+        subcategory: "P3"
+    })
+    chestPlaceTB = false
+
+    @SwitchProperty({
+        name: "Arrow Align Solver",
+        description: "",
+        category: "Dungeon",
+        subcategory: "Device"
+    })
+    arrowAlignSolver = false;
+
+    @SwitchProperty({
+        name: "Block Wrong Clicks",
+        description: "Sneak to disable",
+        category: "Dungeon",
+        subcategory: "Device"
+    })
+    arrowAlignBlockWrong = false;
+
+
+    @SwitchProperty({
+        name: "Invert Sneak",
+        description: "",
+        category: "Dungeon",
+        subcategory: "Device"
+    })
+    arrowAlignInvertSneak = false;
+
+    @SwitchProperty({
+        name: "Arrow Align TriggerBot",
+        description: "Sneak to disable",
+        category: "Dungeon",
+        subcategory: "Device"
+    })
+    arrowAlignTB = false;
+
+    @SliderProperty({
+        name: "Click Delay",
+        description: "",
+        category: "Dungeon",
+        subcategory: "Device",
+        min: 75,
+        max: 1000,
+        increment: 1
+    })
+    arrowAlignDelay = 150;
 
     @SwitchProperty({
         name: "Auto Term",
@@ -106,7 +162,8 @@ class config {
         category: "Terminals",
         subcategory: "AutoTerms",
         min: 20,
-        max: 200
+        max: 200,
+        increment: 1,
     })
     autoTermDelay = 150;
 
@@ -116,7 +173,7 @@ class config {
         category: "Terminals",
         subcategory: "AutoTerms",
         min: 350,
-        max: 500
+        max: 500,
     })
     autoTermFCDelay = 350;
 
@@ -198,9 +255,16 @@ class config {
     })
     terminalTBHighlight = false
 
+    @SwitchProperty({
+        name: "Terminal Highlight All Nearby",
+        description: "",
+        category: "Terminals",
+        subcategory: "Highlight"
+    })
+    terminalTBHighlightNearby = false
 
 
-    
+
     @SwitchProperty({
         name: "Toggle Auto Experiments",
         description: "",
