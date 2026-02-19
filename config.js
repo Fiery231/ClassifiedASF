@@ -237,6 +237,17 @@ class config {
     terminalTB = false
 
     @SliderProperty({
+        name: "Terminal Trigger Bot CPS",
+        description: "",
+        category: "Terminals",
+        subcategory: "Trigger Bot",
+        min: 1,
+        max: 20,
+        increment: 1
+    })
+    terminalTBCPS = 10;
+
+    @SliderProperty({
         name: "Terminal TB Leap Delay",
         description: "Delay for when it should start clicking after leaping (it is in mS so 1000 = 1 second)",
         category: "Terminals",

@@ -16,7 +16,7 @@ register("packetReceived", (packet, event) => {
 
 
 registerPacketChat((message) => {
-    if (message.includes("This Terminal doesn't seem to be responsive at the moment.")) lastClick = 0
+    if (message.includes("This Terminal doesn't seem to be responsive at the moment.")) lastClick = (20 / c.terminalTBCPS)
 })
 
 
@@ -38,8 +38,8 @@ register("tick", () => {
 
 
     if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") {
+        rightClick(false, false)
         lastClick = 20;
-        rightClick(false, true)
     }
 
 })
