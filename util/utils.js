@@ -23,22 +23,28 @@ export function chat(msg) {
     ChatLib.chat(`${getPrefix()} &r${msg}`)
 }
 
-export function leftClick() {
-    //const c = ConfigModule.default;
-    const mc = Client.getMinecraft()
-    const hit = mc.crosshairTarget
+export function leftClick(legitClick = false) {
+    if (legitClick) {
+        Client.getMinecraft().options["attackKey"].setPressed(true)
+        Client.scheduleTask(1, () => Client.getMinecraft().options["attackKey"].setPressed(false))
+    }
+    else {
+        const mc = Client.getMinecraft()
+        const hit = mc.crosshairTarget
 
-    if (!hit) return
-    const type = hit.getType().toString()
+        if (!hit) return
+        const type = hit.getType().toString()
 
-    if (type === "BLOCK") mc.interactionManager.attackBlock(hit.getBlockPos(), hit.getSide())
-    else if (type === "ENTITY") mc.interactionManager.attackEntity(mc.player, hit.getEntity())
+        if (type === "BLOCK") mc.interactionManager.attackBlock(hit.getBlockPos(), hit.getSide())
+        else if (type === "ENTITY") mc.interactionManager.attackEntity(mc.player, hit.getEntity())
+        else mc.inter
 
-    mc.player.swingHand(Hand.field_5808)
+        mc.player.swingHand(Hand.field_5808)
+    }
 }
 
 
-export function rightClick(shouldSwing = false, legitClick = false) {
+export function rightClick(shouldSwing = false, legitClick = false, trigEntity = true) {
     if (legitClick) {
         Client.getMinecraft().options["useKey"].setPressed(true)
         Client.scheduleTask(1, () => Client.getMinecraft().options["useKey"].setPressed(false))
@@ -48,7 +54,7 @@ export function rightClick(shouldSwing = false, legitClick = false) {
         const hit = mc.crosshairTarget
         if (!hit) return;
         if (hit.getType().toString() === "BLOCK") mc.interactionManager.interactBlock(mc.player, Hand.field_5808, hit)
-        else if (hit.getType().toString() === "ENTITY") mc.interactionManager.interactEntity(mc.player, hit.getEntity(), Hand.field_5808)
+        else if (hit.getType().toString() === "ENTITY" && trigEntity) mc.interactionManager.interactEntity(mc.player, hit.getEntity(), Hand.field_5808)
         else mc.interactionManager.interactItem(mc.player, Hand.field_5808)
 
         if (shouldSwing) mc.player.swingHand(Hand.field_5808)
@@ -62,4 +68,14 @@ export function pressMovementKey(key, state, exec) {
         Client.getMinecraft().options[key].setPressed(state)
         if (exec) exec()
     } else chat("wrong key")
+}
+
+export function isPlayerInBox(x1, y1, z1, x2, y2, z2) {
+    const x = Player.getX();
+    const y = Player.getY();
+    const z = Player.getZ();
+
+    return (x >= Math.min(x1, x2) && x <= Math.max(x1, x2) &&
+        y >= Math.min(y1, y2) && y <= Math.max(y1, y2) &&
+        z >= Math.min(z1, z2) && z <= Math.max(z1, z2));
 }

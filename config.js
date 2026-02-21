@@ -16,7 +16,7 @@ import {
 
 @Vigilant("ClassifiedASF/data", "§5ClassifiedASF", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Dungeon", "Terminals", "Random", 'GUI', "Settings"];
+        const categories = ["Dungeon", "Terminals", "Random", "Fast Leap", 'GUI', "Settings"];
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     }
 })
@@ -39,6 +39,14 @@ class config {
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
         this.addDependency("Only skip two on open", "Auto Melody")
+
+        this.addDependency("Door Fast Leap", "Toggle Fast Leap")
+        this.addDependency("Fast Leap in Terms", "Toggle Fast Leap")
+        this.addDependency("EE2 Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
+        this.addDependency("EE3 Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
+        this.addDependency("Core Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
+        this.addDependency("In-Core Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
+        this.addDependency("I4 Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
 
         this.addDependency("Terminal TB Leap Delay", "Terminal Trigger Bot")
         this.registerListener("Open Gui Editor", (curr) => {
@@ -161,8 +169,8 @@ class config {
         description: "",
         category: "Terminals",
         subcategory: "AutoTerms",
-        min: 20,
-        max: 200,
+        min: 80,
+        max: 300,
         increment: 1,
     })
     autoTermDelay = 150;
@@ -318,6 +326,75 @@ class config {
         max: 500
     })
     AEclickDelay = 150;
+
+    @SwitchProperty({
+        name: "Toggle Fast Leap",
+        description: "&cWIP, NOT TESTED",
+        category: "Fast Leap",
+        subcategory: "General"
+    })
+    fastLeapToggle = false
+
+
+    @SwitchProperty({
+        name: "Door Fast Leap",
+        description: "fast leap to door opener",
+        category: "Fast Leap",
+        subcategory: "General"
+    })
+    fastLeapDoor = false
+
+    @SwitchProperty({
+        name: "Fast Leap in Terms",
+        description: "auto leap to ees",
+        category: "Fast Leap",
+        subcategory: "General"
+    })
+    fastLeapTerm = false
+
+    @TextProperty({
+        name: "EE2 Leap",
+        description: "Player/class to leap to for EE2",
+        category: "Fast Leap",
+        subcategory: "Leaps"
+    })
+    ee2Leap = ""
+
+
+    @TextProperty({
+        name: "EE3 Leap",
+        description: "Player/class to leap to for EE3",
+        category: "Fast Leap",
+        subcategory: "Leaps"
+    })
+    ee3Leap = ""
+
+
+    @TextProperty({
+        name: "Core Leap",
+        description: "Player/class to leap to for Core",
+        category: "Fast Leap",
+        subcategory: "Leaps"
+    })
+    coreLeap = ""
+
+
+    @TextProperty({
+        name: "In-Core Leap",
+        description: "Player/class to leap to for inside Core",
+        category: "Fast Leap",
+        subcategory: "Leaps"
+    })
+    inCoreLeap = ""
+
+
+    @TextProperty({
+        name: "I4 Leap",
+        description: "Player/class to leap to from I4",
+        category: "Fast Leap",
+        subcategory: "Leaps"
+    })
+    i4Leap = ""
 
     @SwitchProperty({
         name: "Open Gui Editor",

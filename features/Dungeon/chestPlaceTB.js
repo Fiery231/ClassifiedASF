@@ -1,8 +1,15 @@
 import c from "../../config"
-import { rightClick } from "../../util/utils";
+import { pressMovementKey, rightClick } from "../../util/utils";
 import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils";
 
 let wasActive = false
+let holdingSpace = false
+
+register("worldLoad", () => {
+    holdSpace.unregister()
+    holdingSpace = false
+    wasActive = false
+})
 
 const chestTB = register("renderWorld", () => {
     if (!c.chestPlaceTB) return chestTB.unregister()
@@ -12,7 +19,7 @@ const chestTB = register("renderWorld", () => {
     if (!item) return;
     const holdingItem = item.getName().includes("Soul Sand") || item.getName().includes("Chest");
     const velo = Player.getMotionY(); 
-    if (velo >= -0.5) {
+    if (velo >= -0.8) {
         targetY = 107;
     } else if (velo >= -1.5) {
         targetY = 108;
@@ -23,6 +30,8 @@ const chestTB = register("renderWorld", () => {
     if (holdingItem && inYRange && Player.lookingAt().getType()?.getRegistryName() === "minecraft:stone_bricks") {
         if (!wasActive) {
             rightClick(true, true)
+            holdingSpace = true
+            holdSpace.register()
             wasActive = true;
         }
         else {
@@ -30,6 +39,16 @@ const chestTB = register("renderWorld", () => {
                 wasActive = false
             }
         }
+    }
+}).unregister()
+
+const holdSpace = register("tick", () => {
+    if (holdingSpace) {
+        pressMovementKey("jumpKey", true, () => holdingSpace = false)
+    }
+    else {
+        pressMovementKey("jumpKey", false)
+        holdSpace.unregister()
     }
 }).unregister()
 

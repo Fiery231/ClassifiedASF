@@ -41,17 +41,47 @@ const worldLoad = register("worldLoad", () => {
     startScanning = true
 }).unregister()
 
+//let barrierDeletionEndTime = 0;
+
+
+
 registerPacketChat((msg) => {
+    
     if (c.disableAfterStart) {
         if (msg.includes("[NPC] Mort: Here, I found this map when I first entered the dungeon.")) startScanning = false;
     }
     else {
         if (msg.includes("The BLOOD DOOR has been opened!")) startScanning = false;
     }
+
+    //if (msg.includes("Starting in 1 second.")) barrierDeletionEndTime = Date.now() + 2000;
 })
 
 
+import { Keybind } from "../../../KeybindFix"
+
+
+const gKey = new Keybind("G Key", Keyboard.KEY_NONE, "classifiedasf");
+
+
 register("tick", () => {
+    
+    if (gKey.isKeyDown()) {
+        const mc = Client.getMinecraft();
+        if (!mc || !mc.world) return;
+
+        const hit = mc.crosshairTarget;
+
+        if (hit && hit.getType().toString() == "BLOCK") {
+
+            const blockpos = hit.getBlockPos()
+            const air = Blocks.AIR.getDefaultState();
+
+            World.getWorld().setBlockState(blockpos, air, 3);
+        }
+    }
+
+
     if (!startScanning || !dungeonUtils.inDungeon || dungeonUtils.inBoss) return
 
     const mc = MinecraftClient.getInstance()
@@ -109,8 +139,27 @@ register("tick", () => {
             }
         }
     }
-})
 
+    // if (Date.now() < barrierDeletionEndTime) {
+    //     const mc = MinecraftClient.getInstance();
+    //     if (!mc || !mc.world || !mc.player) return;
+
+    //     const playerPos = mc.player.getBlockPos();
+
+    //     for (let x = -SCAN_RADIUS; x <= SCAN_RADIUS; x++) {
+    //         for (let y = 70; y <= 72; y++) { // Specifically target y 70-72
+    //             for (let z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
+    //                 const pos = playerPos.add(x, y - playerPos.getY(), z);
+    //                 const state = mc.world.getBlockState(pos);
+                    
+    //                 if (state.getBlock() === Blocks.BARRIER) {
+    //                     mc.world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+})
 
 
 
