@@ -32,13 +32,15 @@ class config {
         this.addDependency("Custom Color", "Bye Bye Door")
 
         this.addDependency("Arrow Align TriggerBot", "Arrow Align Solver")
-        this.addDependency("Click Delay", "Arrow Align TriggerBot" && "Arrow Align Solver")
+        this.addDependency("Arrow Align Click Delay", "Arrow Align TriggerBot" && "Arrow Align Solver")
         this.addDependency("Invert Sneak", "Arrow Align Solver")
         this.addDependency("Block Wrong Clicks", "Arrow Align Solver")
 
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
         this.addDependency("Only skip two on open", "Auto Melody")
+
+        this.addDependency("Auto sell delay", "Auto sell")
 
         this.addDependency("Door Fast Leap", "Toggle Fast Leap")
         this.addDependency("Fast Leap in Terms", "Toggle Fast Leap")
@@ -146,7 +148,7 @@ class config {
     arrowAlignTB = false;
 
     @SliderProperty({
-        name: "Click Delay",
+        name: "Arrow Align Click Delay",
         description: "",
         category: "Dungeon",
         subcategory: "Device",
@@ -282,7 +284,24 @@ class config {
     })
     terminalTBHighlightNearby = false
 
+    @SwitchProperty({
+        name: "Auto sell",
+        description: "/paautosell to edit stuff",
+        category: "Random",
+        subcategory: "Auto Sell"
+    })
+    ASToggle = false
 
+    @SliderProperty({
+        name: "Auto sell delay",
+        description: "",
+        category: "Random",
+        subcategory: "Auto Sell",
+        min: 75,
+        max: 500,
+        increment: 1
+    })
+    ASSellDelay = 150;
 
     @SwitchProperty({
         name: "Toggle Auto Experiments",

@@ -198,6 +198,10 @@ c.registerListener("Arrow Align Solver", (curr) => {
     }
 })
 
+c.registerListener("Arrow Align Click Delay", (curr) => {
+    arrowAlignTB.setFps(1000 / (c.arrowAlignDelay ?? 150))
+})
+
 if (c.arrowAlignTB && c.arrowAlignSolver) {
     alignSolver1.register()
     alignSolver2.register()
