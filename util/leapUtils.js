@@ -35,7 +35,7 @@ export default new class leapUtils {
             Client.scheduleTask(() => {
                 if (Player.getContainer()) {
                     Player.getContainer().click(slot, false, "MIDDLE")
-                    chat("&aLeaping to " + this._currentLeap())
+                    chat("&aLeaping to " + itemName)
                     playSound("random.click", 1, 1.2);
                 }
             })

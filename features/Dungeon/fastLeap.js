@@ -71,13 +71,17 @@ function getLeap() {
     if (c.fastLeapTerm && dungeonUtils.inBoss && dungeonUtils.currentPhase == 3) {
         if (isPlayerInBox(113, 160, 48, 89, 100, 122)) {
             leapString = getUserName(c.ee2Leap)
-        } else if (isPlayerInBox(91, 160, 145, 19, 100, 121)) {
+        }
+        if (isPlayerInBox(91, 160, 145, 19, 100, 121)) {
             leapString = getUserName(c.ee3Leap)
-        } else if (isPlayerInBox(-6, 160, 123, 19, 100, 50)) {
+        }
+        if (isPlayerInBox(-6, 160, 123, 19, 100, 50)) {
             leapString = getUserName(c.coreLeap)
-        } else if (isPlayerInBox(17, 160, 27, 90, 100, 50)) {
+        }
+        if (isPlayerInBox(17, 160, 27, 90, 100, 50)) {
             leapString = getUserName(c.inCoreLeap)
-        } else if (isPlayerInBox(62, 126, 34, 64, 128, 36) && !I4Leapt) {
+        }
+        if (isPlayerInBox(62, 126, 34, 64, 128, 36) && !I4Leapt) {
             leapString = getUserName(c.i4Leap)
             I4Leapt = true;
         }

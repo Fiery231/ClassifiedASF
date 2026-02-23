@@ -44,7 +44,7 @@ const main = register('renderworld', () => {
     }
 }).unregister()
 
-
+//org.mozilla.javascript.EcmaError: TypeError: Cannot find function #getStack in object class_2813[containerId=0, stateId=37, slotNum=9, buttonNum=0, clickType=PICKUP, changedSlots={9=><empty>},
 
 register('step', () => {
     if (!terminalUtils.isInTerm()) {

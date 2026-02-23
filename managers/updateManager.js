@@ -9,6 +9,7 @@ const BLACKLIST = [
 const CACHE_BUST = `&t=${Date.now()}`;
 const API_URL = `https://api.github.com/repos/Fiery231/ClassifiedASF/git/trees/main?recursive=1${CACHE_BUST}`;
 const RAW_BASE = `https://raw.githubusercontent.com/Fiery231/ClassifiedASF/main/`;
+//const COMMIT_API = "https://api.github.com/repos/Fiery231/ClassifiedASF/commits/main";
 
 const File = Java.type("java.io.File");
 

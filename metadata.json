@@ -4,5 +4,5 @@
     "description": "&cRequires PrivateASF to load and function",
     "entry": "index.js",
     "version": "3.0.0",
-    "requires": ["Vigilance"]
+    "requires": ["Vigilance", "KeybindFix"]
 }
