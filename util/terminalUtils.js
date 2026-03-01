@@ -237,7 +237,7 @@ export default new class TerminalUtils {
                     const fixedName = fixColorItemName(item[3].getName().removeFormatting().toLowerCase());
                     return fixedName.startsWith(color);
                 }).map(item => [item[0], item[1], 0]);
-
+                //solution = sortLeftPriority(solution)
                 break;
 
             case Terminals.STARTSWITH.id:
@@ -248,7 +248,7 @@ export default new class TerminalUtils {
                 let matchLetter = match[1].toLowerCase();
 
                 solution = this.currentItems.filter(item => item[3].getName().removeFormatting().toLowerCase().startsWith(matchLetter) && !this.clickedIndex.includes(item[1]) /*!item[2]?.hasGlint()*/).map(item => [item[0], item[1], 0]);
-
+                //solution = sortLeftPriority(solution)
                 break;
 
 
@@ -301,6 +301,7 @@ export default new class TerminalUtils {
 
             case Terminals.REDGREEN.id:
                 solution = this.currentItems.filter(item => item[3].getType().getRegistryName().includes("minecraft:red_stained_glass_pane")).map(item => [item[0], item[1], 0]);
+                //solution = sortLeftPriority(solution)
                 break;
 
             default:
@@ -312,4 +313,23 @@ export default new class TerminalUtils {
 
     }
 
+}
+
+const sortLeftPriority = (items) => {
+    return items.sort((a, b) => {
+        const slotA = a[1]
+        const slotB = b[1]
+
+        const rowA = Math.floor(slotA / 9)
+        const rowB = Math.floor(slotB / 9)
+
+        const colA = slotA % 9
+        const colB = slotB % 9
+
+        // prioritize column first (left side)
+        if (colA !== colB) return colA - colB
+
+        // then prioritize top rows
+        return rowA - rowB
+    })
 }

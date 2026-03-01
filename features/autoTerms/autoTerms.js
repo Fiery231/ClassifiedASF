@@ -93,8 +93,8 @@ register("guiKey", (char, keyCode, gui, event) => { // Schizo check #2
 
     const mc = Client.getMinecraft()
     const hotbarKeys = mc.options.hotbarKeys.map(key => key.getDefaultKey().getCode())
-
-    if (!hotbarKeys.includes(keyCode)) return
+    const dropKeyCode = mc.options.dropKey.getDefaultKey().getCode();
+    if (!hotbarKeys.includes(keyCode) && keyCode !== dropKeyCode) return
 
     cancel(event)
     chat("You are in a terminal!")

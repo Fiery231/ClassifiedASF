@@ -8,7 +8,7 @@ export const CloseHandledScreenC2SPacket = Java.type('net.minecraft.network.pack
 export const PlayerInteractEntityC2SPacket = Java.type("net/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket")
 export const CommonPingS2CPacket = Java.type('net.minecraft.network.packet.s2c.common.CommonPingS2CPacket')
 export const PlayerPositionLookS2CPacket = Java.type("net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket"); // s08packet
-
+export const Blocks = Java.type("net.minecraft.block.Blocks")
 
 const prefixOptions = ["ClassifiedASF", "Classified", "PrivateASF", "Private", "PA", "PASF"];
 

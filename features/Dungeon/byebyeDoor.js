@@ -1,8 +1,11 @@
 import c from "../../config"
 import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils"
 import { registerPacketChat } from "../../../PrivateASF-Fabric/util/Events"
+import { Keybind } from "../../../KeybindFix"
+import { Blocks } from "../../util/utils"
+import { playSound } from "../../../PrivateASF-Fabric/util/utils"
 const MinecraftClient = Java.type("net.minecraft.client.MinecraftClient")
-const Blocks = Java.type("net.minecraft.block.Blocks")
+
 
 const SCAN_RADIUS = 7
 let startScanning = false
@@ -37,16 +40,18 @@ function getGlassBlock() {
 }
 
 
-const worldLoad = register("worldLoad", () => {
-    startScanning = true
-}).unregister()
+register("worldLoad", () => {
+    counter = 0
+    barrierReg.register()
+    if (c.byebyeDoor) startScanning = true
+})
 
 //let barrierDeletionEndTime = 0;
 
 
 
 registerPacketChat((msg) => {
-    
+    if (msg.includes("[NPC] Mort: Good luck.")) barrierReg.unregister()
     if (c.disableAfterStart) {
         if (msg.includes("[NPC] Mort: Here, I found this map when I first entered the dungeon.")) startScanning = false;
     }
@@ -57,8 +62,6 @@ registerPacketChat((msg) => {
     //if (msg.includes("Starting in 1 second.")) barrierDeletionEndTime = Date.now() + 2000;
 })
 
-
-import { Keybind } from "../../../KeybindFix"
 
 
 const gKey = new Keybind("G Key", Keyboard.KEY_NONE, "classifiedasf");
@@ -139,40 +142,26 @@ register("tick", () => {
             }
         }
     }
-
-    // if (Date.now() < barrierDeletionEndTime) {
-    //     const mc = MinecraftClient.getInstance();
-    //     if (!mc || !mc.world || !mc.player) return;
-
-    //     const playerPos = mc.player.getBlockPos();
-
-    //     for (let x = -SCAN_RADIUS; x <= SCAN_RADIUS; x++) {
-    //         for (let y = 70; y <= 72; y++) { // Specifically target y 70-72
-    //             for (let z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
-    //                 const pos = playerPos.add(x, y - playerPos.getY(), z);
-    //                 const state = mc.world.getBlockState(pos);
-                    
-    //                 if (state.getBlock() === Blocks.BARRIER) {
-    //                     mc.world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 })
 
+let nextBlockNotify = false
+let counter = 0
 
+const barrierReg = register("tick", () => {
+    if (counter > 20) return barrierReg.unregister()
+    if (!World.isLoaded()) return;
+    if (!dungeonUtils.inDungeon) return counter++; 
+    if (Player.lookingAt()?.getType()?.getName()?.toString()?.removeFormatting() == "Barrier") nextBlockNotify = true
+    if (nextBlockNotify && Player.lookingAt()?.getType()?.getName()?.toString()?.removeFormatting() != "Barrier") {
+        nextBlockNotify = false
+        playSound("note.pling", 0.7, 1)
+    }
+}).unregister()
 
 
 c.registerListener("Bye Bye Door", (curr) => {
-    if (curr) worldLoad.register()
-    else {
-        worldLoad.unregister()
-        startScanning = false
-    }
+    if (curr && dungeonUtils.inDungeon) startScanning = true 
+    else startScanning = false
 })
 
-if (c.byebyeDoor) {
-    worldLoad.register()
-    startScanning = true
-}
+if (c.byebyeDoor) startScanning = true

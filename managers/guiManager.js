@@ -173,9 +173,38 @@ const guistuff4 = register("guiKey", (char, keyCode, gui, event) => {
 
 const overlay = register("renderOverlay", (ctx) => {
     if (OverlayEditor.isOpen()) {
+        const scaleFactor = Renderer.screen.getScale();
+        const mouseX = Client.getMouseX() / scaleFactor;
+        const mouseY = Client.getMouseY() / scaleFactor;
+
+        let closestKey = null;
+        let closestDist = Infinity;
+
         for (let key in overlayDefs) {
             if (!overlayDefs[key].setting()) continue;
-            drawText(ctx, overlayDefs[key].text(), data[key], overlayDefs[key].align === "center", key);
+
+            const text = overlayDefs[key].text();
+            const centered = overlayDefs[key].align === "center";
+
+            drawText(ctx, text, data[key], centered, key);
+
+            if (isMouseOver(mouseX, mouseY, text, data[key], key)) {
+                const dx = mouseX - data[key].x;
+                const dy = mouseY - data[key].y;
+                const dist = dx * dx + dy * dy; // no sqrt needed
+
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestKey = key;
+                }
+            }
+        }
+
+        // Only highlight ONE overlay
+        if (closestKey) {
+            const text = overlayDefs[closestKey].text();
+            const centered = overlayDefs[closestKey].align === "center";
+            drawBoxAround(ctx, text, data[closestKey], centered);
         }
 
         if (activeOverlay) {
@@ -187,7 +216,7 @@ const overlay = register("renderOverlay", (ctx) => {
             const cleanLabel = ChatLib.removeFormatting(labelText);
 
             // Get width minus shadow bias
-            const labelWidth = Renderer.getStringWidth(cleanLabel) - 1;
+            const labelWidth = Renderer.getStringWidth(labelText) - 1;
 
             let labelX = data[activeOverlay].x;
             // Apply manual centering if the overlay itself is centered
@@ -256,7 +285,7 @@ export function drawText(ctx, text, info, center = true, overlayName = null) {
 
     const cleanText = ChatLib.removeFormatting(text);
     // Get width at scale 1.0, minus the shadow bias
-    const baseWidth = Renderer.getStringWidth(cleanText) - 1;
+    const baseWidth = Renderer.getStringWidth(text) - 1;
 
     let drawX = info.x;
     let drawY = info.y;
@@ -265,7 +294,7 @@ export function drawText(ctx, text, info, center = true, overlayName = null) {
         // Shift the X to the left by half the scaled width
         drawX = info.x - (baseWidth * s / 2);
     }
-    
+
     new Text(prefix + text, drawX / s, drawY / s)
         .setShadow(data.globalShadow)
         .setScale(s)
@@ -276,7 +305,7 @@ export function drawText(ctx, text, info, center = true, overlayName = null) {
 function getActualWidth(text, scale) {
     const cleanText = ChatLib.removeFormatting(text);
     // Return the FULL width. Don't divide by 2 here.
-    return (Renderer.getStringWidth(cleanText) - 1) * scale;
+    return (Renderer.getStringWidth(text) - 1) * scale;
 }
 
 function isMouseOver(mx, my, text, info, overlayName) {
@@ -284,10 +313,10 @@ function isMouseOver(mx, my, text, info, overlayName) {
     if (!def) return false;
 
     const s = info.scale || 1;
-    
+
     // --- CHANGE STARTS HERE ---
     // Use manual width if provided, otherwise calculate from text
-    const w = def.w ? (def.w * s) : getActualWidth(text, s); 
+    const w = def.w ? (def.w * s) : getActualWidth(text, s);
     // Use manual height if provided, otherwise use default 9
     const h = def.h ? (def.h * s) : (9 * s);
     // ---------------------------
@@ -296,18 +325,17 @@ function isMouseOver(mx, my, text, info, overlayName) {
     const y = info.y;
 
     return mx >= x - 2 && mx <= x + w + 2 &&
-           my >= y - 2 && my <= y + h + 2;
+        my >= y - 2 && my <= y + h + 2;
 }
 
 function drawBoxAround(ctx, text, info, center = true) {
-    // We need the overlayName or def here to see the w/h
-    // Since you only call this for activeOverlay, we can grab it
-    const def = overlayDefs[activeOverlay]; 
+    const def = overlayDefs[activeOverlay] || overlayDefs;
+
     const s = info.scale || 1;
 
-    // Use manual w/h if they exist
-    const w = (def && def.w) ? (def.w * s) : getActualWidth(text, s);
-    const h = (def && def.h) ? (def.h * s) : (9 * s);
+    // Use SAME logic as isMouseOver
+    const w = def && def.w ? (def.w * s) : getActualWidth(text, s);
+    const h = def && def.h ? (def.h * s) : (9 * s);
 
     const x = center ? info.x - (w / 2) : info.x;
     const y = info.y;
@@ -317,5 +345,5 @@ function drawBoxAround(ctx, text, info, center = true) {
     ctx.fill(x - 2, y - 2, x + w + 2, y + h + 2, color);
 }
 
-let lastWidth = data.screenWidth;
-let lastHeight = data.screenHeight;
+// let lastWidth = data.screenWidth;
+// let lastHeight = data.screenHeight;

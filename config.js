@@ -16,7 +16,7 @@ import {
 
 @Vigilant("ClassifiedASF/data", "§5ClassifiedASF", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Dungeon", "Terminals", "Random", "Fast Leap", 'GUI', "Settings"];
+        const categories = ["Dungeon", "Terminals", "Boss", "Random", "Fast Leap", 'GUI', "Settings"];
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     }
 })
@@ -35,6 +35,17 @@ class config {
         this.addDependency("Arrow Align Click Delay", "Arrow Align TriggerBot" && "Arrow Align Solver")
         this.addDependency("Invert Sneak", "Arrow Align Solver")
         this.addDependency("Block Wrong Clicks", "Arrow Align Solver")
+
+        this.addDependency("SS Auto Start Delay", "SS Auto Start")
+        this.addDependency("SS Display Progress", "SS Solver")
+        this.addDependency("SS Block Wrong Clicks", "SS Solver")
+        this.addDependency("SS Block Wrong Start Clicks", "SS Solver")
+        this.addDependency("SS Block Wrong Start Clicks", "SS Solver")
+        this.addDependency("SS Max Start Clicks", "SS Solver" && "SS Block Wrong Start Clicks")
+        this.addDependency("SS TriggerBot", "SS Solver")
+        this.addDependency("SS TriggerBot Delay", "SS Solver" && "SS TriggerBot")
+        this.addDependency("SS Auto Rotate", "SS Solver" && "SS TriggerBot")
+        this.addDependency("SS Rotate Delay", "SS Solver" && "SS Auto Rotate" && "SS TriggerBot")
 
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
@@ -113,50 +124,6 @@ class config {
         subcategory: "P3"
     })
     chestPlaceTB = false
-
-    @SwitchProperty({
-        name: "Arrow Align Solver",
-        description: "",
-        category: "Dungeon",
-        subcategory: "Device"
-    })
-    arrowAlignSolver = false;
-
-    @SwitchProperty({
-        name: "Block Wrong Clicks",
-        description: "Sneak to disable",
-        category: "Dungeon",
-        subcategory: "Device"
-    })
-    arrowAlignBlockWrong = false;
-
-
-    @SwitchProperty({
-        name: "Invert Sneak",
-        description: "",
-        category: "Dungeon",
-        subcategory: "Device"
-    })
-    arrowAlignInvertSneak = false;
-
-    @SwitchProperty({
-        name: "Arrow Align TriggerBot",
-        description: "Sneak to disable",
-        category: "Dungeon",
-        subcategory: "Device"
-    })
-    arrowAlignTB = false;
-
-    @SliderProperty({
-        name: "Arrow Align Click Delay",
-        description: "",
-        category: "Dungeon",
-        subcategory: "Device",
-        min: 75,
-        max: 1000,
-        increment: 1
-    })
-    arrowAlignDelay = 150;
 
     @SwitchProperty({
         name: "Auto Term",
@@ -283,6 +250,150 @@ class config {
         subcategory: "Highlight"
     })
     terminalTBHighlightNearby = false
+
+    @SwitchProperty({
+        name: "SS Auto Start",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSAutoStart = false;
+
+    @SliderProperty({
+        name: "SS Auto Start Delay",
+        description: "Auto Start Delay with small randomization&cWIP",
+        category: "Device",
+        subcategory: "SS",
+        min: 80,
+        max: 300,
+        increment: 1
+    })
+    SSAutoStartDelay = 120;
+
+    @SwitchProperty({
+        name: "SS Solver",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSSolver = false;
+
+    @SwitchProperty({
+        name: "SS Display Progress",
+        description: "Displays what set of buttons SS is at&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSDisplay = false;
+
+    @SwitchProperty({
+        name: "SS Block Wrong Clicks",
+        description: "Needed for TB to be consistent, too lazy to fix&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSBlockWrong = false;
+
+    @SwitchProperty({
+        name: "SS Block Wrong Start Clicks",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSBlockWrongStart = false;
+
+    @SliderProperty({
+        name: "SS Max Start Clicks",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS",
+        max: 10,
+        min: 1,
+        increment: 1,
+    })
+    SSMaxStartClicks = 3;
+
+    @SwitchProperty({
+        name: "SS TriggerBot",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSTriggerBot = false;
+
+    @SliderProperty({
+        name: "SS TriggerBot Delay",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS",
+        max: 1000,
+        min: 100,
+        increment: 1
+    })
+    SSTBDelay = 100;
+
+    @SwitchProperty({
+        name: "SS Auto Rotate",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSAuto = false;
+
+    @SliderProperty({
+        name: "SS Rotate Delay",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS",
+        max: 500,
+        min: 100,
+        increment: 1
+    })
+    SSRotateDelay = 150;
+
+    @SwitchProperty({
+        name: "Arrow Align Solver",
+        description: "",
+        category: "Device",
+        subcategory: "Arrow Align"
+    })
+    arrowAlignSolver = false;
+
+    @SwitchProperty({
+        name: "Block Wrong Clicks",
+        description: "Sneak to disable",
+        category: "Device",
+        subcategory: "Arrow Align"
+    })
+    arrowAlignBlockWrong = false;
+
+
+    @SwitchProperty({
+        name: "Invert Sneak",
+        description: "",
+        category: "Device",
+        subcategory: "Arrow Align"
+    })
+    arrowAlignInvertSneak = false;
+
+    @SwitchProperty({
+        name: "Arrow Align TriggerBot",
+        description: "Sneak to disable",
+        category: "Device",
+        subcategory: "Arrow Align"
+    })
+    arrowAlignTB = false;
+
+    @SliderProperty({
+        name: "Arrow Align Click Delay",
+        description: "",
+        category: "Device",
+        subcategory: "Arrow Align",
+        min: 75,
+        max: 1000,
+        increment: 1
+    })
+    arrowAlignDelay = 150;
 
     @SwitchProperty({
         name: "Auto sell",

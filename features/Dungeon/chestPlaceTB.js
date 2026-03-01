@@ -19,12 +19,14 @@ const chestTB = register("renderWorld", () => {
     if (!item) return;
     const holdingItem = item.getName().includes("Soul Sand") || item.getName().includes("Chest");
     const velo = Player.getMotionY(); 
-    if (velo >= -0.8) {
-        targetY = 107;
+    if (velo >= -0.6) {
+        targetY = 107
+    } else if (velo >= -0.8) {
+        targetY = 107.875;
     } else if (velo >= -1.5) {
-        targetY = 108;
+        targetY = 108.875;
     } else {
-        targetY = 109;
+        targetY = 109.875;
     }
     const inYRange = Player.getY() < targetY && Player.getY() > 106.875;
     if (holdingItem && inYRange && Player.lookingAt().getType()?.getRegistryName() === "minecraft:stone_bricks") {

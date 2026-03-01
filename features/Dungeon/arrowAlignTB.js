@@ -56,7 +56,7 @@ function getFrames() {
     });
 }
 
-const alignSolver1 = register("tick", () => {
+const alignSolver1 = register("step", () => {
     if (!dungeonUtils.inBoss) return;
     clicksRemaining = {}
 
@@ -81,7 +81,7 @@ const alignSolver1 = register("tick", () => {
             if (needed !== 0) clicksRemaining[i] = needed;
         }
     });
-}).unregister()
+}).setFps(40).unregister()
 
 const alignSolver2 = register("packetSent", (packet, event) => {
     if (!dungeonUtils.inBoss) return;
@@ -192,9 +192,10 @@ c.registerListener("Arrow Align Solver", (curr) => {
         alignSolver3.register()
     }
     else {
+        alignSolver3.unregister()
+        if (c.arrowAlignTB) return
         alignSolver1.unregister()
         alignSolver2.unregister()
-        alignSolver3.unregister()
     }
 })
 
@@ -202,15 +203,29 @@ c.registerListener("Arrow Align Click Delay", (curr) => {
     arrowAlignTB.setFps(1000 / (c.arrowAlignDelay ?? 150))
 })
 
-if (c.arrowAlignTB && c.arrowAlignSolver) {
+if (c.arrowAlignTB || c.arrowAlignSolver) {
     alignSolver1.register()
     alignSolver2.register()
-    alignSolver3.register()
+    if (c.arrowAlignSolver) alignSolver3.register()
+    if (c.arrowAlignTB) arrowAlignTB.register()
 }
 
 c.registerListener("Arrow Align TriggerBot", (curr) => {
-    if (curr && c.arrowAlignSolver) arrowAlignTB.register()
-    else arrowAlignTB.unregister()
+    if (curr) {
+        alignSolver1.register()
+        alignSolver2.register()
+        arrowAlignTB.register()
+        if (c.arrowAlignSolver) alignSolver3.register()
+    } 
+    else {
+        arrowAlignTB.unregister()
+        if (!c.arrowAlignSolver) {
+            alignSolver1.unregister()
+            alignSolver2.unregister()
+            alignSolver3.unregister()
+        }
+    }
+
 })
 
 
