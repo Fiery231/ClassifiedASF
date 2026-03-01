@@ -41,11 +41,11 @@ class config {
         this.addDependency("SS Block Wrong Clicks", "SS Solver")
         this.addDependency("SS Block Wrong Start Clicks", "SS Solver")
         this.addDependency("SS Block Wrong Start Clicks", "SS Solver")
-        this.addDependency("SS Max Start Clicks", "SS Solver" && "SS Block Wrong Start Clicks")
+        this.addDependency("SS Max Start Clicks", "SS Solver")
         this.addDependency("SS TriggerBot", "SS Solver")
-        this.addDependency("SS TriggerBot Delay", "SS Solver" && "SS TriggerBot")
-        this.addDependency("SS Auto Rotate", "SS Solver" && "SS TriggerBot")
-        this.addDependency("SS Rotate Delay", "SS Solver" && "SS Auto Rotate" && "SS TriggerBot")
+        this.addDependency("SS TriggerBot Delay", "SS Solver")
+        this.addDependency("SS Auto Rotate", "SS Solver")
+        this.addDependency("SS Rotate Delay", "SS Solver")
 
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
@@ -279,14 +279,6 @@ class config {
     SSSolver = false;
 
     @SwitchProperty({
-        name: "SS Display Progress",
-        description: "Displays what set of buttons SS is at&cWIP",
-        category: "Device",
-        subcategory: "SS"
-    })
-    SSDisplay = false;
-
-    @SwitchProperty({
         name: "SS Block Wrong Clicks",
         description: "Needed for TB to be consistent, too lazy to fix&cWIP",
         category: "Device",
@@ -302,6 +294,30 @@ class config {
     })
     SSBlockWrongStart = false;
 
+    @SwitchProperty({
+        name: "SS Display Progress",
+        description: "Displays what set of buttons SS is at&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSDisplay = false;
+
+    @SwitchProperty({
+        name: "SS TriggerBot",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSTriggerBot = false;
+
+    @SwitchProperty({
+        name: "SS Auto Rotate",
+        description: "If you have TB on with this, it'll just be autoSS &cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSAuto = false;
+
     @SliderProperty({
         name: "SS Max Start Clicks",
         description: "&cWIP",
@@ -313,14 +329,6 @@ class config {
     })
     SSMaxStartClicks = 3;
 
-    @SwitchProperty({
-        name: "SS TriggerBot",
-        description: "&cWIP",
-        category: "Device",
-        subcategory: "SS"
-    })
-    SSTriggerBot = false;
-
     @SliderProperty({
         name: "SS TriggerBot Delay",
         description: "&cWIP",
@@ -330,15 +338,7 @@ class config {
         min: 100,
         increment: 1
     })
-    SSTBDelay = 100;
-
-    @SwitchProperty({
-        name: "SS Auto Rotate",
-        description: "&cWIP",
-        category: "Device",
-        subcategory: "SS"
-    })
-    SSAuto = false;
+    SSTBDelay = 120;
 
     @SliderProperty({
         name: "SS Rotate Delay",

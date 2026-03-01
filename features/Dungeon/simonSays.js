@@ -118,8 +118,7 @@ function isLookingAtBlock(target) {
 
 function processLogic(x, y, z, state) {
     const newBlock = state.getBlock().getName().getString();
-
-    const oldBlock = World.getBlockAt(x, y, z).type.getName().removeFormatting();
+    const oldBlock = World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting();
     const isPowered = state.toString().includes("powered=true");
 
     if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2] && newBlock == "Stone Button" && isPowered) {
@@ -199,27 +198,27 @@ const SSSolverReg = register("chat", (boss, msg, event) => {
 
 const SSSolverReg1 = register("packetReceived", (packet) => {
     if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0) return;
-    if (lastLanternTick++ > 10 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z).type.getName().removeFormatting() === "Stone Button").length > 8) {
+    if (lastLanternTick++ > 10 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
         firstPhase = false;
         startClickCounter = 0
     }
 }).setFilteredClass(CommonPingS2CPacket).unregister()
 
 const SSSolverReg2 = register("packetReceived", (packet, event) => {
-    if (!inP3) return;
+    if (!inP3 || !c.SSSolver) return;
     const pos = packet.getPos();
     processLogic(pos.getX(), pos.getY(), pos.getZ(), packet.getState());
 }).setFilteredClass(BlockUpdateS2CPacket).unregister()
 
 const SSSolverReg3 = register("packetReceived", (packet, event) => {
-    if (!inP3) return;
+    if (!inP3 || !c.SSSolver) return;
     packet.visitUpdates((pos, state) => {
         processLogic(pos.getX(), pos.getY(), pos.getZ(), state);
     });
 }).setFilteredClass(ChunkDeltaUpdateS2CPacket).unregister()
 
 const SSSolverReg4 = register("packetSent", (packet, event) => {
-    if (!inP3) return;
+    if (!inP3 || !c.SSSolver) return;
     const hit = packet.getBlockHitResult()
     if (!hit) return;
 
@@ -294,7 +293,7 @@ const SSSolverReg5 = register("renderWorld", () => {
 registerOverlay("SSDisplay", { text: () => "SS: X/5", align: "center", colors: true, setting: c.displaySS })
 
 const SSDisplayGUI = register("renderOverlay", (ctx) => {
-    if (!inP3) return;
+    if (!inP3 || !c.SSSolver) return;
     if (clickInOrder.length === 0) return;
     if (clickNeeded > clickInOrder.length) return;
 
@@ -316,7 +315,7 @@ const SSDisplayGUI = register("renderOverlay", (ctx) => {
 // SSBlockWrongStart SSMaxStartClicks SSBlockWrong SSTriggerBot SSAuto SSSolver displaySS
 
 const autoSSTB = register("tick", () => {
-    if (!inP3) return;
+    if (!inP3 || !c.SSSolver) return;
     if (clickInOrder.length === 0 || clickNeeded >= clickInOrder.length) return;
     if (Player.isSneaking() || !isAtSS() || !isDoingSS) return isDoingSS = false;
     const next = clickInOrder[clickNeeded];
