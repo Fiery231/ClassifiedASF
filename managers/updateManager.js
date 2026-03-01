@@ -207,11 +207,15 @@ function checkForUpdates() {
 }
 
 let firstConnect = true
-if (World.isLoaded) firstConnect = false
+
 register("serverConnect", () => {
     if (firstConnect) checkForUpdates();
     firstConnect = false
 });
+
+register("serverDisconnect", () => {
+    firstConnect = false
+})
 
 function isOutdated(local, remote) {
     const l = local.split(".").map(Number);
