@@ -268,10 +268,8 @@ export default new class TerminalUtils {
             const colA = slotA % 9
             const colB = slotB % 9
 
-            // prioritize column first (left side)
             if (colA !== colB) return colA - colB
 
-            // then prioritize top rows
             return rowA - rowB
         })
     }

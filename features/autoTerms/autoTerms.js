@@ -36,7 +36,6 @@ const main = register('renderworld', () => {
         const click = currentClick[2] === 0 ? "MIDDLE" : "RIGHT"
         pendingSlot = currentClick[1]
         Player.getContainer().click(currentClick[1], false, click)
-        ChatLib.chat(currentClick[1])
         //Client.getMinecraft().interactionManager.clickSlot(lastWindowId, currentClick[1], 2, net.minecraft.screen.slot.SlotActionType.CLONE, Client.getMinecraft().player)
         //console.log("sent syncId: " + lastWindowId + " slot: " + currentClick[1] + " button: 2 Actiontype:Clone")
         lastClickTime = Date.now()
