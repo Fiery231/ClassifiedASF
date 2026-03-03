@@ -278,6 +278,14 @@ class config {
     })
     SSSolver = false;
 
+    @CheckboxProperty({
+        name: "SS Filled",
+        description: "Filled instead of outline&cWIP",
+        category: "Device",
+        subcategory: "SS"
+    })
+    SSSolverFilled = false;
+
     @SwitchProperty({
         name: "SS Block Wrong Clicks",
         description: "Needed for TB to be consistent, too lazy to fix&cWIP",

@@ -133,7 +133,7 @@ function processLogic(x, y, z, state) {
     if (y < 120 || y > 123 || z < 92 || z > 95) return;
 
     if (x == 111) {
-        if (newBlock == "Obsidian" && oldBlock == "Sea Lantern") {
+        if (newBlock == "Sea Lantern" && oldBlock == "Obsidian") {
             if (clickInOrder.some(p => p.y === y && p.z === z)) return;
             clickInOrder.push({ x: x, y: y, z: z });
             lastLanternTick = 0;
@@ -174,15 +174,15 @@ const SSAutoStartRegister = register("chat", () => {
     for (let i = 0; i < 3; i++) {
         let randomFactor = 1 + (Math.random() * 0.2 - 0.1);
         let delay = c.SSAutoStartDelay ?? 150 * randomFactor * i;
-
+        if (i === 2) delay += 50;
         totalDelay += delay;
-
+        
         setTimeout(() => {
             Client.scheduleTask(() => {
                 rightClick(true, false);
             });
         }, totalDelay);
-        if (i == 2) {
+        if (i == 2 && c.SSAuto) {
             Client.scheduleTask(Math.ceil(totalDelay / 50) + 2, () => {
                 rotateSmoothly(-90.2, 0.7, c.SSRotateDelay)
             })
@@ -198,7 +198,7 @@ const SSSolverReg = register("chat", (boss, msg, event) => {
 }).setCriteria("[BOSS] ${boss}: ${msg}").unregister()
 
 const SSSolverReg1 = register("packetReceived", (packet) => {
-    if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0) return;
+    if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0 || !firstPhase) return;
     if (lastLanternTick++ > 10 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
         firstPhase = false;
         startClickCounter = 0
@@ -217,7 +217,7 @@ const SSSolverReg3 = register("packetReceived", (packet, event) => {
         processLogic(pos.getX(), pos.getY(), pos.getZ(), state);
     });
 }).setFilteredClass(ChunkDeltaUpdateS2CPacket).unregister()
-
+let lastManualClick = 0;
 const SSSolverReg4 = register("packetSent", (packet, event) => {
     if (!inP3 || !c.SSSolver) return;
     const hit = packet.getBlockHitResult()
@@ -227,6 +227,7 @@ const SSSolverReg4 = register("packetSent", (packet, event) => {
     const [x, y, z] = [pos.getX(), pos.getY(), pos.getZ()]
     const isShift = Player.isSneaking()
     if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2] && firstPhase && c.SSBlockWrongStart) {
+
         if (startClickCounter++ >= c.SSMaxStartClicks && !isShift) {
             cancel(event);
             return;
@@ -237,7 +238,6 @@ const SSSolverReg4 = register("packetSent", (packet, event) => {
         return;
     }
     if (x === 110 && y >= 120 && y <= 123 && z >= 92 && z <= 95) {
-
         if (c.SSBlockWrong && !isShift) {
 
             const correct = clickInOrder[clickNeeded];
@@ -278,8 +278,8 @@ const SSSolverReg5 = register("renderWorld", () => {
             0.26
         )
 
-        RenderUtils.drawOutline(box, color, true)
-
+        if (!c.SSSolverFilled) RenderUtils.drawOutline(box, color, true)
+        else RenderUtils.drawFilled(box, color, true)
         const number = (i - clickNeeded + 1).toString();
 
         RenderUtils.drawText(
