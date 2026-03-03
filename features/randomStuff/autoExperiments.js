@@ -67,7 +67,7 @@ function solveChronomatron() {
 function solveUltraSequencer() {
     const maxUltraSequencer = c.AEmaxXP ? 20 : 8 - c.AEserumCount;
     const items = Player.getContainer().getItems()
-    if (items[49]?.getType().getName().includes('Clock')) hasAdded = false
+    if (items[49]?.getType()?.getName()?.includes('Clock')) hasAdded = false
     if (!hasAdded && items[49]?.getType().getName().includes('Glowstone')) {
         if (!items[44]) return
         ultrasequencerOrder = []
@@ -83,7 +83,7 @@ function solveUltraSequencer() {
         }
     }
 
-    if (items[49]?.getType().getName().includes('Clock') && ultrasequencerOrder[clicks] && Date.now() - lastClick > c.AEclickDelay) {
+    if (items[49]?.getType()?.getName()?.includes('Clock') && ultrasequencerOrder[clicks] && Date.now() - lastClick > c.AEclickDelay) {
         Player.getContainer().click(ultrasequencerOrder[clicks], false, 'MIDDLE')
         lastClick = Date.now()
         clicks++

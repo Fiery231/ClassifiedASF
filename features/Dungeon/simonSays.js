@@ -133,7 +133,7 @@ function processLogic(x, y, z, state) {
     if (y < 120 || y > 123 || z < 92 || z > 95) return;
 
     if (x == 111) {
-        if (newBlock == "Sea Lantern" && oldBlock == "Obsidian") {
+        if (newBlock == "Obsidian" && oldBlock == "Sea Lantern") {
             if (clickInOrder.some(p => p.y === y && p.z === z)) return;
             clickInOrder.push({ x: x, y: y, z: z });
             lastLanternTick = 0;
@@ -217,7 +217,7 @@ const SSSolverReg3 = register("packetReceived", (packet, event) => {
         processLogic(pos.getX(), pos.getY(), pos.getZ(), state);
     });
 }).setFilteredClass(ChunkDeltaUpdateS2CPacket).unregister()
-let lastManualClick = 0;
+
 const SSSolverReg4 = register("packetSent", (packet, event) => {
     if (!inP3 || !c.SSSolver) return;
     const hit = packet.getBlockHitResult()

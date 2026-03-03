@@ -133,6 +133,16 @@ class config {
     })
     autoTerm = false
 
+    @SelectorProperty({
+        name: "Auto Term Sorting",
+        description: "",
+        category: "Terminals",
+        subcategory: "AutoTerms",
+        options: ["Normal", "Up-Down", "Humanized"]
+    })
+    autoTermSorting = 0;
+
+
     @SliderProperty({
         name: "Auto Term Delay",
         description: "",

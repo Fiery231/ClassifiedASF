@@ -137,7 +137,7 @@ const arrowAlignTB = register("step", () => {
     if (x !== frameGridCorner.x || frameIndex < 0 || frameIndex > 24 || currentFrameRotations[frameIndex] === -1) return;
 
     if (clicksRemaining.hasOwnProperty(frameIndex)) {
-        rightClick(true, false)
+        rightClick(true, true)
     }
 }).setFps(1000 / (c.arrowAlignDelay ?? 150)).unregister()
 

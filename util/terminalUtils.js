@@ -46,6 +46,7 @@ export default new class TerminalUtils {
         this.lastWindowID = -52345234532;
         this.lastInteract = 0;
         this.clickedIndex = []
+        this.lastClickedSlot = null
 
         register("packetReceived", (packet, event) => {
             if (!(packet instanceof OpenScreenS2CPacket)) return
@@ -117,7 +118,7 @@ export default new class TerminalUtils {
         }).setFilteredClass(ScreenHandlerSlotUpdateS2CPacket)
 
 
-        
+
 
         register("packetSent", () => {
             this.inTerm = false
@@ -136,6 +137,7 @@ export default new class TerminalUtils {
             //console.log("syncId: " + packet.syncId() + " slot: " + packet.slot() + " button: " + packet.button() + " actionType: " + packet.actionType())
             if (!this.inTerm) return;
             if (this.terminalID == 5) return;
+            this.lastClickedSlot = packet.slot();
             if (Date.now() - this.initialOpen < 300 || packet.syncId() !== this.lastWindowID || this.initialOpen == 0) {
                 cancel(event)
                 ChatLib.chat("First Click Protection")
@@ -144,7 +146,7 @@ export default new class TerminalUtils {
 
         register("packetSent", (packet, event) => {
             if (!Player.lookingAt() || Player.lookingAt() instanceof Block || Player.lookingAt().getName().removeFormatting() != "Inactive Terminal") return;
-            
+
             //if (this.lastInteract > 0 || this.isInTerm()) cancel(event)
             //else this.lastInteract = 10
             if (this.isInTerm()) cancel(event)
@@ -199,6 +201,7 @@ export default new class TerminalUtils {
         this.lastWindowID = -52345234532
         this.inTerm = false
         this.clickedIndex = []
+        this.lastClickedSlot = null
     }
 
 
@@ -212,6 +215,65 @@ export default new class TerminalUtils {
 
     getTermID() {
         return this.terminalID
+    }
+
+    sortByNearestNeighbor(items, startingSlot) {
+        if (items.length === 0) return [];
+
+        const getCoords = (slot) => ({
+            x: slot % 9,
+            y: Math.floor(slot / 9)
+        });
+
+        let currentPos = getCoords(startingSlot ?? 22);
+
+        let remaining = [...items];
+        let sortedSolution = [];
+
+        while (remaining.length > 0) {
+            let closestIndex = -1;
+            let minDistance = Infinity;
+
+            for (let i = 0; i < remaining.length; i++) {
+                const itemCoords = getCoords(remaining[i][1]);
+
+                const dist = Math.sqrt(
+                    Math.pow(itemCoords.x - currentPos.x, 2) +
+                    Math.pow(itemCoords.y - currentPos.y, 2)
+                );
+
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestIndex = i;
+                }
+            }
+
+            const nextItem = remaining.splice(closestIndex, 1)[0];
+            sortedSolution.push(nextItem);
+
+            currentPos = getCoords(nextItem[1]);
+        }
+
+        return sortedSolution;
+    };
+
+    sortLeftPriority(items) {
+        return items.sort((a, b) => {
+            const slotA = a[1]
+            const slotB = b[1]
+
+            const rowA = Math.floor(slotA / 9)
+            const rowB = Math.floor(slotB / 9)
+
+            const colA = slotA % 9
+            const colB = slotB % 9
+
+            // prioritize column first (left side)
+            if (colA !== colB) return colA - colB
+
+            // then prioritize top rows
+            return rowA - rowB
+        })
     }
 
     getSolution() {
@@ -237,7 +299,8 @@ export default new class TerminalUtils {
                     const fixedName = fixColorItemName(item[3].getName().removeFormatting().toLowerCase());
                     return fixedName.startsWith(color);
                 }).map(item => [item[0], item[1], 0]);
-                //solution = sortLeftPriority(solution)
+                if (c.autoTermSorting == 1) solution = this.sortLeftPriority(solution)
+                else if (c.autoTermSorting == 2) solution = this.sortByNearestNeighbor(solution, this.lastClickedSlot);
                 break;
 
             case Terminals.STARTSWITH.id:
@@ -248,7 +311,8 @@ export default new class TerminalUtils {
                 let matchLetter = match[1].toLowerCase();
 
                 solution = this.currentItems.filter(item => item[3].getName().removeFormatting().toLowerCase().startsWith(matchLetter) && !this.clickedIndex.includes(item[1]) /*!item[2]?.hasGlint()*/).map(item => [item[0], item[1], 0]);
-                //solution = sortLeftPriority(solution)
+                if (c.autoTermSorting == 1) solution = this.sortLeftPriority(solution)
+                else if (c.autoTermSorting == 2) solution = this.sortByNearestNeighbor(solution, this.lastClickedSlot);
                 break;
 
 
@@ -301,7 +365,8 @@ export default new class TerminalUtils {
 
             case Terminals.REDGREEN.id:
                 solution = this.currentItems.filter(item => item[3].getType().getRegistryName().includes("minecraft:red_stained_glass_pane")).map(item => [item[0], item[1], 0]);
-                //solution = sortLeftPriority(solution)
+                if (c.autoTermSorting == 1) solution = this.sortLeftPriority(solution)
+                else if (c.autoTermSorting == 2) solution = this.sortByNearestNeighbor(solution, this.lastClickedSlot);
                 break;
 
             default:
@@ -313,23 +378,4 @@ export default new class TerminalUtils {
 
     }
 
-}
-
-const sortLeftPriority = (items) => {
-    return items.sort((a, b) => {
-        const slotA = a[1]
-        const slotB = b[1]
-
-        const rowA = Math.floor(slotA / 9)
-        const rowB = Math.floor(slotB / 9)
-
-        const colA = slotA % 9
-        const colB = slotB % 9
-
-        // prioritize column first (left side)
-        if (colA !== colB) return colA - colB
-
-        // then prioritize top rows
-        return rowA - rowB
-    })
 }
