@@ -25,6 +25,7 @@ let isDoingSS = false
 let lastClick = Date.now()
 let rotatingTo = -1;
 let rotationInProgress = false;
+let sneakLocked = false
 
 function resetSolution() {
     clickInOrder = [];
@@ -231,6 +232,7 @@ const SSSolverReg4 = register("packetSent", (packet, event) => {
             return;
         }
         isDoingSS = true;
+        sneakLocked = false
         lastClick = Date.now()
         return;
     }
@@ -245,6 +247,7 @@ const SSSolverReg4 = register("packetSent", (packet, event) => {
             }
             else {
                 isDoingSS = true
+                sneakLocked = false
                 lastClick = Date.now()
             }
         }
@@ -317,11 +320,15 @@ const SSDisplayGUI = register("renderOverlay", (ctx) => {
 const autoSSTB = register("tick", () => {
     if (!inP3 || !c.SSSolver) return;
     if (clickInOrder.length === 0 || clickNeeded >= clickInOrder.length) return;
-    if (Player.isSneaking() || !isAtSS() || !isDoingSS) return isDoingSS = false;
+    if (Player.isSneaking()) {
+        sneakLocked = true;
+        return;
+    }
+    if (!isAtSS() || !isDoingSS) return isDoingSS = false;
     const next = clickInOrder[clickNeeded];
     if (!next) return;
     if (firstPhase) return;
-    if (rotatingTo !== clickNeeded && !rotationInProgress && c.SSAuto) {
+    if (rotatingTo !== clickNeeded && !rotationInProgress && c.SSAuto && !sneakLocked) {
         rotatingTo = clickNeeded;
         rotationInProgress = true;
         const buttonX = next.x - 1 + 0.85 + plusMinus(0.05);

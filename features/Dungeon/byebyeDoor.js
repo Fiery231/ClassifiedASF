@@ -148,11 +148,12 @@ let nextBlockNotify = false
 let counter = 0
 
 const barrierReg = register("tick", () => {
-    if (counter > 20) return barrierReg.unregister()
+    if (counter > 80) return barrierReg.unregister()
     if (!World.isLoaded()) return;
     if (!dungeonUtils.inDungeon) return counter++; 
-    if (Player.lookingAt()?.getType()?.getName()?.toString()?.removeFormatting() == "Barrier") nextBlockNotify = true
-    if (nextBlockNotify && Player.lookingAt()?.getType()?.getName()?.toString()?.removeFormatting() != "Barrier") {
+    const lookingat = Player.lookingAt()?.getType()?.getName()?.toString()?.removeFormatting()
+    if (lookingat == "Barrier") nextBlockNotify = true
+    if (nextBlockNotify && lookingat != "Barrier") {
         nextBlockNotify = false
         playSound("note.pling", 0.7, 1)
     }
