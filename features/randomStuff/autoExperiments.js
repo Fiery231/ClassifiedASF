@@ -102,3 +102,4 @@ function hasGlint(ctItem) {
 function isDye(ctItem) {
     return (ctItem.getType().getRegistryName().includes('dye') || nonDyedDyes.includes(ctItem.getType().getRegistryName()))
 }
+

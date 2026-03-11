@@ -2,6 +2,7 @@ import c from "../../config"
 import { CommonPingS2CPacket, rightClick } from "../../util/utils";
 import RenderUtils from "../../../PrivateASF-Fabric/util/renderUtils"
 import { data, drawText, registerOverlay } from "../../managers/guiManager";
+import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils";
 
 const startButtonPos = [110, 121, 91];
 const grid = [
@@ -15,12 +16,22 @@ const BlockUpdateS2CPacket = Java.type("net.minecraft.network.packet.s2c.play.Bl
 const ChunkDeltaUpdateS2CPacket = Java.type("net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket");
 const PlayerInteractBlockC2SPacket = Java.type("net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket")
 
+const ssCache = new Map();
+
+function getCacheKey(x, y, z) {
+    return `${x},${y},${z}`;
+}
+
+function refreshSSCache() {
+    ssCache.clear();
+}
+
 let clickInOrder = [];
 let clickNeeded = 0;
 let firstPhase = true;
 let startClickCounter = 0;
 let lastLanternTick = -1;
-let inP3 = false
+let inP3S1 = false
 let isDoingSS = false
 let lastClick = Date.now()
 let rotatingTo = -1;
@@ -119,10 +130,14 @@ function isLookingAtBlock(target) {
 
 function processLogic(x, y, z, state) {
     const newBlock = state.getBlock().getName().getString();
-    const oldBlock = World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting();
+    const key = getCacheKey(x, y, z);
+    const oldBlock = ssCache.get(key);
+    ssCache.set(key, newBlock);
     const isPowered = state.toString().includes("powered=true");
+    const oldPowered = World.getBlockAt(x, y, z).getState().toString().includes("powered=true")
 
-    if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2] && newBlock == "Stone Button" && isPowered) {
+    if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2]) {
+        refreshSSCache()
         resetSolution();
         firstPhase = true;
         rotatingTo = -1
@@ -136,16 +151,20 @@ function processLogic(x, y, z, state) {
         if (newBlock == "Obsidian" && oldBlock == "Sea Lantern") {
             if (clickInOrder.some(p => p.y === y && p.z === z)) return;
             clickInOrder.push({ x: x, y: y, z: z });
+            console.log(
+                "ClickInOrder:",
+                clickInOrder.map((p, i) => `#${i + 1} (${p.x}, ${p.y}, ${p.z})`).join(" -> ")
+            );
             lastLanternTick = 0;
             if (firstPhase) {
-                if (clickInOrder.length === 2) clickInOrder.reverse();
+                //if (clickInOrder.length === 2) clickInOrder.reverse();
                 if (clickInOrder.length === 3) clickInOrder.splice(clickInOrder.length - 2, 1);
             }
         }
     }
     else if (x == 110) {
-        if (newBlock == "Air") resetSolution()
-        else if (oldBlock == "Stone Button" && World.getBlockAt(x, y, z).getState().toString().includes("powered=true")) {
+        if (newBlock == "Air" && !firstPhase) resetSolution()
+        else if (oldBlock == "Stone Button" && oldPowered) {
 
             clickNeeded = clickInOrder.findIndex(pos => pos.x == x + 1 && pos.y == y && pos.z == z) + 1;
             if (clickNeeded >= clickInOrder.length) {
@@ -176,7 +195,7 @@ const SSAutoStartRegister = register("chat", () => {
         let delay = c.SSAutoStartDelay ?? 150 * randomFactor * i;
         if (i === 2) delay += 50;
         totalDelay += delay;
-        
+
         setTimeout(() => {
             Client.scheduleTask(() => {
                 rightClick(true, false);
@@ -192,13 +211,15 @@ const SSAutoStartRegister = register("chat", () => {
 
 const SSSolverReg = register("chat", (boss, msg, event) => {
     name = boss.removeFormatting();
-    if (name == "Goldor") inP3 = true
-    else if (msg == 'I should have known that I stood no chance.') inP3 = true
-    else inP3 = false
+    if (name == "Goldor") inP3S1 = true
+    else if (msg == 'I should have known that I stood no chance.') inP3S1 = true
+    else inP3S1 = false
 }).setCriteria("[BOSS] ${boss}: ${msg}").unregister()
 
 const SSSolverReg1 = register("packetReceived", (packet) => {
-    if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0 || !firstPhase) return;
+    if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0) return;
+    if (dungeonUtils.getStage() != 1 && dungeonUtils.getStage() != 0) return inP3S1 = false
+    if (!firstPhase) return;
     if (lastLanternTick++ > 10 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
         firstPhase = false;
         startClickCounter = 0
@@ -206,26 +227,30 @@ const SSSolverReg1 = register("packetReceived", (packet) => {
 }).setFilteredClass(CommonPingS2CPacket).unregister()
 
 const SSSolverReg2 = register("packetReceived", (packet, event) => {
-    if (!inP3 || !c.SSSolver) return;
+    if (!inP3S1 || !c.SSSolver) return;
     const pos = packet.getPos();
     processLogic(pos.getX(), pos.getY(), pos.getZ(), packet.getState());
 }).setFilteredClass(BlockUpdateS2CPacket).unregister()
 
 const SSSolverReg3 = register("packetReceived", (packet, event) => {
-    if (!inP3 || !c.SSSolver) return;
+    if (!inP3S1 || !c.SSSolver) return;
     packet.visitUpdates((pos, state) => {
         processLogic(pos.getX(), pos.getY(), pos.getZ(), state);
     });
 }).setFilteredClass(ChunkDeltaUpdateS2CPacket).unregister()
 
 const SSSolverReg4 = register("packetSent", (packet, event) => {
-    if (!inP3 || !c.SSSolver) return;
+    if (!inP3S1 || !c.SSSolver) return;
     const hit = packet.getBlockHitResult()
     if (!hit) return;
 
     const pos = hit.getBlockPos();
     const [x, y, z] = [pos.getX(), pos.getY(), pos.getZ()]
     const isShift = Player.isSneaking()
+    if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2]) {
+        resetSolution()
+        refreshSSCache()
+    }
     if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2] && firstPhase && c.SSBlockWrongStart) {
 
         if (startClickCounter++ >= c.SSMaxStartClicks && !isShift) {
@@ -296,7 +321,7 @@ const SSSolverReg5 = register("renderWorld", () => {
 registerOverlay("SSDisplay", { text: () => "SS: X/5", align: "center", colors: true, setting: c.displaySS })
 
 const SSDisplayGUI = register("renderOverlay", (ctx) => {
-    if (!inP3 || !c.SSSolver) return;
+    if (!inP3S1 || !c.SSSolver) return;
     if (clickInOrder.length === 0) return;
     if (clickNeeded > clickInOrder.length) return;
 
@@ -318,7 +343,7 @@ const SSDisplayGUI = register("renderOverlay", (ctx) => {
 // SSBlockWrongStart SSMaxStartClicks SSBlockWrong SSTriggerBot SSAuto SSSolver displaySS
 
 const autoSSTB = register("tick", () => {
-    if (!inP3 || !c.SSSolver) return;
+    if (!inP3S1 || !c.SSSolver) return;
     if (clickInOrder.length === 0 || clickNeeded >= clickInOrder.length) return;
     if (Player.isSneaking()) {
         sneakLocked = true;
@@ -336,7 +361,7 @@ const autoSSTB = register("tick", () => {
         const buttonZ = next.z + 0.5 + plusMinus(0.15);
         const [yaw, pitch] = getYawPitch(buttonX, buttonY, buttonZ);
 
-        rotateSmoothly(yaw, pitch, c.SSRotateDelay); // 120ms rotation
+        rotateSmoothly(yaw, pitch, c.SSRotateDelay);
     }
     if (Date.now() - lastClick < (c.SSTBDelay ?? 150)) return
     const lookingAt = Player.lookingAt();
@@ -399,3 +424,122 @@ c.registerListener("SS Solver", (curr) => {
 })
 
 if (c.SSSolver) solverReg(true)
+
+
+// const Blocks = Java.type("net.minecraft.block.Blocks");
+// const BlockPostil = Java.type("net.minecraft.util.math.BlockPos");
+
+// function removeBlockClientSide(x, y, z) {
+//     const pos = new BlockPostil(x, y, z);
+//     const airState = Blocks.AIR.getDefaultState();
+//     World.getWorld().setBlockState(pos, airState, 3)
+// }
+
+// register("step", () => {
+//     removeBlockClientSide(62, 135, 142)
+//     removeBlockClientSide(62, 134, 142)
+//     removeBlockClientSide(61, 133, 142)
+//     removeBlockClientSide(61, 134, 142)
+//     removeBlockClientSide(61, 135, 142)
+//     removeBlockClientSide(61, 136, 142)
+//     removeBlockClientSide(60, 136, 142)
+//     removeBlockClientSide(60, 133, 142)
+//     removeBlockClientSide(59, 133, 142)
+//     removeBlockClientSide(59, 134, 142)
+//     removeBlockClientSide(59, 135, 142)
+//     removeBlockClientSide(59, 136, 142)
+//     removeBlockClientSide(58, 134, 142)
+//     removeBlockClientSide(58, 135, 142)
+//     removeBlockClientSide(58, 14, 142)
+// }).setFps(2)
+
+
+// let recording = false
+
+// register("command", (arg) => {
+//     if (!arg) {
+//         Client.scheduleTask(3, () => sneak())
+//         Client.scheduleTask(4, () => {swapToItem("aspect")})
+//         Client.scheduleTask(5, () => {nextAOTV.register()})
+//     }
+//     else if (arg == "reset") {
+//         useItemList.length = 0
+//     }
+//     else {
+//         recording = !recording
+//         if (recording) {
+//             listen.register()
+//         }
+//         else listen.unregister()
+//     }
+// }).setName("testaotv")
+
+// const useItemList = [];
+
+// const listen = register("clicked", (x, y, btn, isDown) => {
+//     if (isDown && btn == 1 && Player.getHeldItem().getName().removeFormatting().includes("Aspect") && Player.isSneaking()) {
+//         useItemList.push({yaw: Player.getPlayer().getYaw(), pitch: Player.getPlayer().getPitch()})
+//         ChatLib.chat("Added Yaw: " + Player.getPlayer().getYaw() + " Pitch: " + Player.getPlayer().getPitch())
+//     }
+// }).unregister()
+
+// export const swapToItem = (targetItemName) => {
+//     const itemSlot = Player?.getInventory()?.getItems()?.findIndex(item => { return item?.getName()?.toLowerCase()?.includes(targetItemName.toLowerCase()) })
+//     if (itemSlot === -1 || itemSlot > 7) {
+//         ChatLib.chat("breh")
+//         return
+//     } else {
+//         heldItem = Player.getHeldItemIndex() 
+//         Player.setHeldItemIndex(itemSlot)
+//     }
+// }
+
+// const nextAOTV = register("tick", () => {
+//     if (!Player.getHeldItem()?.getName()?.removeFormatting()?.includes("Aspect")) return nextAOTV.unregister()
+//     for (let i = 0; i < useItemList.length; i++) {
+//         const pos = useItemList[i];
+//         senduseitem(pos.yaw, pos.pitch);
+//     }
+//     swapToItem("pearl")
+//     Client.scheduleTask(0, () => unsneak())
+//     Client.scheduleTask(0, () => {pearlListener.register()})
+//     nextAOTV.unregister()
+// }).unregister()
+
+// const pearlListener = register("tick", () => {
+//     senduseitem(-180, -90)
+//     Client.scheduleTask(0, () => senduseitem(-180, -90))
+//     Client.scheduleTask(1, () => senduseitem(-180, -90))
+//     pearlListener.unregister()
+// }).unregister()
+
+// register("command", () => {
+//     ChatLib.chat(Player.getPlayer().getYaw() + " " + Player.getPlayer().getPitch())
+// }).setName("getyp")
+
+// const PlayerInteractItemC2SPacket = Java.type("net.minecraft.class_2886")
+// function senduseitem(yaw = Player.getPlayer().getYaw(), pitch = Player.getPlayer().getPitch()) {
+//     sequence = 0
+//     const hand_yuritil = Java.type("net.minecraft.class_1268")
+//     const mainhand = hand_yuritil.MAIN_HAND
+//     const c08tosend = new PlayerInteractItemC2SPacket(mainhand, sequence, yaw, pitch)
+//     Client.sendPacket(c08tosend)
+// }
+
+// function sneak() {
+//     const sneakKey = Client.getMinecraft().field_1690.field_1832;
+//     try {
+//         sneakKey.method_23481(true);
+//     } catch (e) {
+//         debugp("&cError sneaking: " + e);
+//     }
+// }
+
+// function unsneak() {
+//     const sneakKey = Client.getMinecraft().field_1690.field_1832;
+//     try {
+//         sneakKey.method_23481(false);
+//     } catch (e) {
+//         debugp("&cError unsneaking: " + e);
+//     }
+// }

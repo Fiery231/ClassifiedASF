@@ -61,7 +61,7 @@ const alignSolver1 = register("step", () => {
     clicksRemaining = {}
 
     const dist = Math.sqrt(Math.pow(Player.getX() - 0, 2) + Math.pow(Player.getZ() - 77, 2));
-    if (dist > 200) {
+    if (dist > 25) {
         currentFrameRotations = null;
         targetSolution = null;
         return;
@@ -70,9 +70,14 @@ const alignSolver1 = register("step", () => {
     currentFrameRotations = getFrames()
 
     possibleSolutions.forEach(arr => {
+        let valid = true
         for (let i = 0; i < arr.length; i++) {
-            if ((arr[i] === -1 || currentFrameRotations[i] === -1) && arr[i] !== currentFrameRotations[i]) return;
+            if ((arr[i] === -1 || currentFrameRotations[i] === -1) && arr[i] !== currentFrameRotations[i]) {
+                valid = false
+                break
+            }
         }
+        if (!valid) return
 
         targetSolution = arr;
 
@@ -81,7 +86,7 @@ const alignSolver1 = register("step", () => {
             if (needed !== 0) clicksRemaining[i] = needed;
         }
     });
-}).setFps(40).unregister()
+}).setFps(100).unregister()
 
 const alignSolver2 = register("packetSent", (packet, event) => {
     if (!dungeonUtils.inBoss) return;
@@ -103,7 +108,6 @@ const alignSolver2 = register("packetSent", (packet, event) => {
     if (pos[0] !== frameGridCorner.x || frameIndex < 0 || frameIndex > 24 || currentFrameRotations[frameIndex] === -1) return;
 
     if (!clicksRemaining.hasOwnProperty(frameIndex) && (Player.isSneaking() == c.arrowAlignInvertSneak) && c.arrowAlignBlockWrong) {
-        ChatLib.chat("canceling")
         cancel(event);
         return;
     }
@@ -118,6 +122,8 @@ const alignSolver2 = register("packetSent", (packet, event) => {
 
 }).setFilteredClass(PlayerInteractEntityC2SPacket).unregister()
 
+
+const lastFinalClick = {};
 
 const arrowAlignTB = register("step", () => {
     if (!dungeonUtils.inBoss) return
@@ -137,7 +143,25 @@ const arrowAlignTB = register("step", () => {
     if (x !== frameGridCorner.x || frameIndex < 0 || frameIndex > 24 || currentFrameRotations[frameIndex] === -1) return;
 
     if (clicksRemaining.hasOwnProperty(frameIndex)) {
-        rightClick(true, true)
+        const clicks = clicksRemaining[frameIndex]
+
+        if (clicks < 2) {
+            const now = Date.now()
+            if (!lastFinalClick[frameIndex] || now - lastFinalClick[frameIndex] >= c.arrowAlignDelay * 2) {
+                rightClick(true, true)
+                lastFinalClick[frameIndex] = now
+            }
+        } 
+        else if (clicks < 3) {
+            const now = Date.now()
+            if (!lastFinalClick[frameIndex] || now - lastFinalClick[frameIndex] >= c.arrowAlignDelay * 2) {
+                rightClick(true, false)
+                lastFinalClick[frameIndex] = now
+            }
+        }
+        else {
+            rightClick(true, false)
+        }
     }
 }).setFps(1000 / (c.arrowAlignDelay ?? 150)).unregister()
 
@@ -216,7 +240,7 @@ c.registerListener("Arrow Align TriggerBot", (curr) => {
         alignSolver2.register()
         arrowAlignTB.register()
         if (c.arrowAlignSolver) alignSolver3.register()
-    } 
+    }
     else {
         arrowAlignTB.unregister()
         if (!c.arrowAlignSolver) {
