@@ -83,37 +83,58 @@ function rotate(yaw, pitch) {
     Player.getPlayer().setPitch(pitch)
 }
 
-function rotateSmoothly(targetYaw, targetPitch, time = 150) {
+let activeRotation = null;
 
-    while (targetYaw > 180) targetYaw -= 360;
-    while (targetYaw < -180) targetYaw += 360;
+function normalizeYaw(yaw) {
+    while (yaw > 180) yaw -= 360;
+    while (yaw < -180) yaw += 360;
+    return yaw;
+}
+
+function getShortestYaw(from, to) {
+    let diff = normalizeYaw(to - from);
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+}
+
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
+function rotateSmoothly(targetYaw, targetPitch, duration = 150) {
+
+    if (activeRotation) activeRotation.unregister();
 
     const startYaw = Player.getYaw();
     const startPitch = Player.getPitch();
+
+    const yawDiff = getShortestYaw(startYaw, targetYaw);
+    const pitchDiff = targetPitch - startPitch;
+
     const startTime = Date.now();
 
-    const trigger = register("step", () => {
-        const progress = time <= 0 ? 1 : Math.max(Math.min((Date.now() - startTime) / time, 1), 0);
+    rotationInProgress = true;
 
-        const eased = bezier(progress, 0, 1, 1, 1);
+    activeRotation = register("step", () => {
 
-        const newYaw = startYaw + (targetYaw - startYaw) * eased;
-        const newPitch = startPitch + (targetPitch - startPitch) * eased;
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
 
-        rotate(newYaw, newPitch);
+        const eased = easeOutCubic(progress);
+
+        const yaw = startYaw + yawDiff * eased;
+        const pitch = startPitch + pitchDiff * eased;
+
+        rotate(yaw, pitch);
 
         if (progress >= 1) {
-            trigger.unregister();
-            rotationInProgress = false
+            activeRotation.unregister();
+            activeRotation = null;
+            rotationInProgress = false;
         }
-    })
-}
 
-function bezier(t, initial, p1, p2, final) {
-    return (1 - t) ** 3 * initial +
-        3 * (1 - t) ** 2 * t * p1 +
-        3 * (1 - t) * t ** 2 * p2 +
-        t ** 3 * final;
+    }).setFps(120); // very smooth
 }
 
 
@@ -193,7 +214,7 @@ const SSAutoStartRegister = register("chat", () => {
     for (let i = 0; i < 3; i++) {
         let randomFactor = 1 + (Math.random() * 0.2 - 0.1);
         let delay = c.SSAutoStartDelay ?? 150 * randomFactor * i;
-        if (i === 2) delay += 50;
+        if (i === 2) delay += 40;
         totalDelay += delay;
 
         setTimeout(() => {
@@ -292,14 +313,14 @@ const SSSolverReg5 = register("renderWorld", () => {
         if (i === clickNeeded) color = [0, 1, 0, 0.5];
         else if (i === clickNeeded + 1) color = [1, 0.5, 0, 0.5];
 
-        const centerX = pos.x - 0.05
+        const centerX = pos.x - 0.07
         const centerZ = pos.z + 0.5
         const box = RenderUtils.getRectBox(
             centerX,
             pos.y + 0.37,
             centerZ,
-            0.15,
-            0.4,
+            0.12,
+            0.38,
             0.26
         )
 
@@ -310,9 +331,9 @@ const SSSolverReg5 = register("renderWorld", () => {
         RenderUtils.drawText(
             number,
             centerX,
-            pos.y + 0.6,
+            pos.y + 0.59,
             centerZ,
-            1,
+            0.7,
             false
         );
     }
@@ -342,7 +363,7 @@ const SSDisplayGUI = register("renderOverlay", (ctx) => {
 
 // SSBlockWrongStart SSMaxStartClicks SSBlockWrong SSTriggerBot SSAuto SSSolver displaySS
 
-const autoSSTB = register("tick", () => {
+const autoSSTB = register("step", () => {
     if (!inP3S1 || !c.SSSolver) return;
     if (clickInOrder.length === 0 || clickNeeded >= clickInOrder.length) return;
     if (Player.isSneaking()) {
@@ -370,10 +391,11 @@ const autoSSTB = register("tick", () => {
     if (isLookingAtBlock(next)) {
         rightClick(true, false)
         lastClick = Date.now();
+        clickNeeded++;
         rotatingTo = -1;
         rotationInProgress = false;
     }
-}).unregister()
+}).setFps(100).unregister()
 
 function plusMinus(range) {
     return (Math.random() - 0.5) * 2 * range;

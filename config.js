@@ -49,19 +49,21 @@ class config {
 
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
-        this.addDependency("Only skip two on open", "Auto Melody")
-
+        //this.addDependency("Only skip two on open", "Auto Melody")
+        this.addDependency("Skip On Open", "Auto Melody")
         this.addDependency("Auto sell delay", "Auto sell")
 
         this.addDependency("Door Fast Leap", "Toggle Fast Leap")
         this.addDependency("Fast Leap in Terms", "Toggle Fast Leap")
-        this.addDependency("EE2 Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
-        this.addDependency("EE3 Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
-        this.addDependency("Core Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
-        this.addDependency("In-Core Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
-        this.addDependency("I4 Leap", "Toggle Fast Leap" && "Fast Leap in Terms")
+        this.addDependency("Lazy Mage Leap", "Toggle Fast Leap")
+        this.addDependency("EE2 Leap", "Toggle Fast Leap")
+        this.addDependency("EE3 Leap", "Toggle Fast Leap")
+        this.addDependency("Core Leap", "Toggle Fast Leap")
+        this.addDependency("In-Core Leap", "Toggle Fast Leap")
+        this.addDependency("I4 Leap", "Toggle Fast Leap")
 
         this.addDependency("Terminal TB Leap Delay", "Terminal Trigger Bot")
+        this.addDependency("Terminal Trigger Bot CPS", "Terminal Trigger Bot")
         this.registerListener("Open Gui Editor", (curr) => {
             Client.currentGui.close()
             activategui()
@@ -207,13 +209,22 @@ class config {
     })
     noSkipFirst = false
 
-    @SwitchProperty({
-        name: "Only skip two on open",
-        description: "",
+    // @SwitchProperty({
+    //     name: "Only skip two on open",
+    //     description: "",
+    //     category: "Terminals",
+    //     subcategory: "Melody"
+    // })
+    // onlySkip2 = false
+
+    @SelectorProperty({
+        name: "Skip On Open",
+        description: "How many to skip on melody open (4 could ban if you get 2 insta melodys)",
         category: "Terminals",
-        subcategory: "Melody"
+        subcategory: "Melody",
+        options: ["1", "2", "3", "4"]
     })
-    onlySkip2 = false
+    onlySkip = 1;
 
     @SwitchProperty({
         name: "Terminal Trigger Bot",
@@ -260,6 +271,22 @@ class config {
         subcategory: "Highlight"
     })
     terminalTBHighlightNearby = false
+
+    @SwitchProperty({
+        name: "Relic Pickup TB",
+        description: "",
+        category: "Boss",
+        subcategory: "Relics"
+    })
+    relicPickupTB = false
+
+    @SwitchProperty({
+        name: "Relic Place TB",
+        description: "",
+        category: "Boss",
+        subcategory: "Relics"
+    })
+    relicPlaceTB = false
 
     @SwitchProperty({
         name: "SS Auto Start",
@@ -477,7 +504,7 @@ class config {
 
     @SwitchProperty({
         name: "Toggle Fast Leap",
-        description: "&cWIP, NOT TESTED",
+        description: "&cWIP",
         category: "Fast Leap",
         subcategory: "General"
     })
@@ -499,6 +526,14 @@ class config {
         subcategory: "General"
     })
     fastLeapTerm = false
+
+    @TextProperty({
+        name: "Lazy Mage Leap",
+        description: "Player/class to leap to for after storm crush",
+        category: "Fast Leap",
+        subcategory: "Leaps"
+    })
+    lazyLeap = ""
 
     @TextProperty({
         name: "EE2 Leap",

@@ -168,6 +168,7 @@ export default new class TerminalUtils {
         //     this.currentTitle = title
         //     if (this.currentTitle.includes("Click the button on time!")) this.lastInteract = 0
         // }).setFilteredClass(OpenScreenS2CPacket)
+        
 
         register("worldLoad", () => {
             this.inTerm = false;

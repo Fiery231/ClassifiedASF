@@ -17,7 +17,7 @@ const melodyRegex = /^Click the button on time!$/
 register("packetReceived", (packet, event) => {
     const currentTitle = packet.getName().getString()
     cwid = packet.getSyncId()
-    
+
     let match = currentTitle.match(melodyRegex)
     if (match) {
         lastOpen = new Date().getTime();
@@ -41,7 +41,7 @@ register("packetReceived", (packet, event) => {
 //     const windowId = packet.getSyncId()
 //     if (slot < 0) return;
 //     if (slot >= windowSize) return;
-    
+
 //     if (itemStack != null) {
 //         if (itemStack.toString().includes("minecraft:air")) return;
 //         const item = new Item(itemStack)
@@ -49,7 +49,7 @@ register("packetReceived", (packet, event) => {
 //             slot,
 //             name: item.getType().getRegistryName()
 //         }
-        
+
 //         if (slots[slot].name == "minecraft:lime_stained_glass_pane") {
 //             const correct = slots.find(slot => slot && slot.name == "minecraft:magenta_stained_glass_pane")?.slot - 1;
 //             const button = Math.floor(slot / 9) - 1;
@@ -60,7 +60,7 @@ register("packetReceived", (packet, event) => {
 //             if (current !== correct) return;
 //             const buttonSlot = button * 9 + 16;
 //             const time = new Date().getTime()
-            
+
 //             Client.scheduleTask(0, () => click(buttonSlot, 2, net.minecraft.screen.slot.SlotActionType.CLONE))
 
 //             if (time - lastOpen < 500 && current == 0 && c.noSkipFirst) return
@@ -89,13 +89,13 @@ register("packetReceived", (packet, event) => {
 function click(slot, button = "MIDDLE") {
     if (slot == undefined || button == undefined) return;
     if (slot < 16 || slot > 43) return;
-    
+
     const container = Player.getContainer()
     if (!container) return;
 
     try {
         container.click(slot, false, button)
-    } catch (e) {}
+    } catch (e) { }
 }
 
 register("packetReceived", (packet, event) => {
@@ -112,7 +112,7 @@ register("packetReceived", (packet, event) => {
             slot,
             name: item.getType().getRegistryName()
         }
-        
+
         if (slots[slot].name == "minecraft:lime_stained_glass_pane") {
             const correct = slots.find(slot => slot && slot.name == "minecraft:magenta_stained_glass_pane")?.slot - 1;
             const button = Math.floor(slot / 9) - 1;
@@ -126,16 +126,15 @@ register("packetReceived", (packet, event) => {
             //if (lastOpen + c.melodyFirstDelay > time) return; don't really think I ever needed this
 
             Client.scheduleTask(0, () => click(buttonSlot, "MIDDLE"))
-            
-            if (time - lastOpen < 500 && current == 0 && c.noSkipFirst) return
 
+            if (time - lastOpen < 500 && current == 0 && c.noSkipFirst) return
+            const shouldRestrict = (time - lastOpen < 500);
+            const maxSkip = shouldRestrict ? (c.onlySkip + 1) : 3;
             if (((c.melodySkip == 1 && (current == 0 || current == 4)) || c.melodySkip == 2) && button != 3) {
-                if (button <= 3) Client.scheduleTask(1, () => click(buttonSlot + 9, "MIDDLE"))
-                const shouldRestrict = c.onlySkip2 && (time - lastOpen < 500);
-                if (!shouldRestrict) {
-                    if (button <= 2) Client.scheduleTask(2, () => click(buttonSlot + 18, "MIDDLE"))
-                    if (button <= 1) Client.scheduleTask(3, () => click(buttonSlot + 27, "MIDDLE"))
-                }
+                if (button <= 3 && maxSkip >= 1) Client.scheduleTask(1, () => click(buttonSlot + 9, "MIDDLE"))
+                //const shouldRestrict = c.onlySkip2 && (time - lastOpen < 500);
+                if (button <= 2 && maxSkip >= 2) Client.scheduleTask(2, () => click(buttonSlot + 18, "MIDDLE"))
+                if (button <= 1 && maxSkip >= 3) Client.scheduleTask(3, () => click(buttonSlot + 27, "MIDDLE"))
             }
         }
 
