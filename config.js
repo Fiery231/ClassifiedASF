@@ -49,8 +49,8 @@ class config {
 
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
-        //this.addDependency("Only skip two on open", "Auto Melody")
-        this.addDependency("Skip On Open", "Auto Melody")
+        this.addDependency("Only skip two on open", "Auto Melody")
+
         this.addDependency("Auto sell delay", "Auto sell")
 
         this.addDependency("Door Fast Leap", "Toggle Fast Leap")
@@ -76,8 +76,18 @@ class config {
             chat(`§aOverlays shadow is now: ${data.globalShadow ? "§bON" : "§cOFF"}`)
         })
 
-
+        this.addDependency("Relic Pickup Aura", "hardCheatInternal")
+        this.addDependency("Relic Place Aura", "hardCheatInternal")
+        this.addDependency("Arrow Align Aura", "hardCheatInternal")
     }
+    @SwitchProperty({
+        name: "hardCheatInternal",
+        description: "internal use only",
+        category: "Hidden",
+        subcategory: "Hidden",
+        hidden: true
+    })
+    hardCheat = false
 
     @SwitchProperty({
         name: "Bye Bye Door",
@@ -209,22 +219,13 @@ class config {
     })
     noSkipFirst = false
 
-    // @SwitchProperty({
-    //     name: "Only skip two on open",
-    //     description: "",
-    //     category: "Terminals",
-    //     subcategory: "Melody"
-    // })
-    // onlySkip2 = false
-
-    @SelectorProperty({
-        name: "Skip On Open",
-        description: "How many to skip on melody open (4 could ban if you get 2 insta melodys)",
+    @SwitchProperty({
+        name: "Only skip two on open",
+        description: "",
         category: "Terminals",
-        subcategory: "Melody",
-        options: ["1", "2", "3", "4"]
+        subcategory: "Melody"
     })
-    onlySkip = 1;
+    onlySkip2 = false
 
     @SwitchProperty({
         name: "Terminal Trigger Bot",
@@ -287,6 +288,30 @@ class config {
         subcategory: "Relics"
     })
     relicPlaceTB = false
+
+    @SwitchProperty({
+        name: "Relic Pickup Aura",
+        description: "",
+        category: "Boss",
+        subcategory: "§dAuras"
+    })
+    relicPickupAura = false
+
+    @SwitchProperty({
+        name: "Relic Place Aura",
+        description: "",
+        category: "Boss",
+        subcategory: "§dAuras"
+    })
+    relicPlaceAura = false
+
+    @SwitchProperty({
+        name: "Arrow Align Aura",
+        description: "",
+        category: "Boss",
+        subcategory: "§dAuras"
+    })
+    alignAura = false
 
     @SwitchProperty({
         name: "SS Auto Start",
@@ -357,11 +382,11 @@ class config {
 
     @SwitchProperty({
         name: "SS Auto Rotate",
-        description: "If you have TB on with this, it'll just be autoSS &cWIP",
+        description: "Just full on autoSS &cworks but idk if I fucked up on any code :)",
         category: "Device",
         subcategory: "SS"
     })
-    SSAuto = false;
+    SSAutoRotate = false;
 
     @SliderProperty({
         name: "SS Max Start Clicks",
@@ -380,7 +405,7 @@ class config {
         category: "Device",
         subcategory: "SS",
         max: 1000,
-        min: 100,
+        min: 50,
         increment: 1
     })
     SSTBDelay = 120;
@@ -391,7 +416,7 @@ class config {
         category: "Device",
         subcategory: "SS",
         max: 500,
-        min: 100,
+        min: 50,
         increment: 1
     })
     SSRotateDelay = 150;

@@ -9,6 +9,10 @@ export const PlayerInteractEntityC2SPacket = Java.type("net/minecraft/network/pa
 export const CommonPingS2CPacket = Java.type('net.minecraft.network.packet.s2c.common.CommonPingS2CPacket')
 export const PlayerPositionLookS2CPacket = Java.type("net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket"); // s08packet
 export const Blocks = Java.type("net.minecraft.block.Blocks")
+export const Vec3 = Java.type("net.minecraft.util.math.Vec3d");
+
+export const getDistance3D = (x1, y1, z1, x2, y2, z2) => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2);
+export const getDistance2D = (x1, z1, x2, z2) => Math.sqrt((x2 - x1) ** 2 + (z2 - z1) ** 2);
 
 const prefixOptions = ["ClassifiedASF", "Classified", "PrivateASF", "Private", "PA", "PASF"];
 
@@ -44,10 +48,10 @@ export function leftClick(legitClick = false) {
 }
 
 
-export function rightClick(shouldSwing = false, legitClick = false, trigEntity = true) {
+export function rightClick(shouldSwing = false, legitClick = false, trigEntity = true, time = 1) {
     if (legitClick) {
         Client.getMinecraft().options["useKey"].setPressed(true)
-        Client.scheduleTask(1, () => Client.getMinecraft().options["useKey"].setPressed(false))
+        Client.scheduleTask(time, () => Client.getMinecraft().options["useKey"].setPressed(false))
     }
     else {
         const mc = Client.getMinecraft()
@@ -78,4 +82,17 @@ export function isPlayerInBox(x1, y1, z1, x2, y2, z2) {
     return (x >= Math.min(x1, x2) && x <= Math.max(x1, x2) &&
         y >= Math.min(y1, y2) && y <= Math.max(y1, y2) &&
         z >= Math.min(z1, z2) && z <= Math.max(z1, z2));
+}
+
+export function getSequence() {
+    const world = World.getWorld();
+    if (!world) return;
+
+    const managerField = world.getClass().getDeclaredField("field_37951");
+    managerField.setAccessible(true);
+    const updateManager = managerField.get(world);
+
+    updateManager.method_41937(); // increment
+    const sequence = Number(updateManager.method_41942()) || 0;
+    return sequence
 }

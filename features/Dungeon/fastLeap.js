@@ -69,31 +69,25 @@ function getLeap() {
     if (c.fastLeapDoor && !dungeonUtils.inBoss) leapString = getUserName(lastOpener)
 
     if (c.fastLeapTerm && dungeonUtils.inBoss && dungeonUtils.currentPhase == 3) {
-        if (isPlayerInBox(113, 160, 48, 89, 100, 122)) {
+        if (isPlayerInBox(62, 126, 34, 64, 128, 36) && dungeonUtils.currentStage == 1) {
+            leapString = getUserName(c.i4Leap)
+        }
+        else if (isPlayerInBox(113, 160, 30, 90, 100, 143)) {
             leapString = getUserName(c.ee2Leap)
         }
-        if (isPlayerInBox(91, 160, 145, 19, 100, 121)) {
+        else if (isPlayerInBox(90, 160, 145, -3, 100, 121)) {
             leapString = getUserName(c.ee3Leap)
         }
-        if (isPlayerInBox(-6, 160, 123, 19, 100, 50)) {
+        else if (isPlayerInBox(-6, 160, 121, 19, 100, 30)) {
             leapString = getUserName(c.coreLeap)
         }
-        if (isPlayerInBox(17, 160, 27, 90, 100, 50)) {
+        else if (isPlayerInBox(19, 160, 27, 90, 100, 51)) {
             leapString = getUserName(c.inCoreLeap)
         }
-        if (isPlayerInBox(62, 126, 34, 64, 128, 36) && !I4Leapt) {
-            leapString = getUserName(c.i4Leap)
-            I4Leapt = true;
+        else if (isPlayerInBox(91, 163, 96, 97, 168, 89)) {
+            leapString == getUserName(c.lazyLeap)
         }
     }
 
     return leapString
 }
-
-register("worldLoad", () => {
-    I4Leapt = false;
-})
-
-register("chat", () => {
-    I4Leapt = true
-}).setCriteria("The Core entrance is opening!")

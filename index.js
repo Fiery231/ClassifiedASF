@@ -73,7 +73,7 @@ export default function ClassifiedASF() {
     });
 
     ChatLib.chat(`${Prefix}&aModule Loaded! (&f${loadedCount}&a features)`);
-    ChatLib.chat(`${Prefix} &cIDK IF ANYTHING BANS ATM, BE CAREFUL`);
+    ChatLib.chat(`${Prefix}&cIDK IF ANYTHING BANS ATM, BE CAREFUL`);
 
 
     register("command", () => {
@@ -86,5 +86,8 @@ export default function ClassifiedASF() {
         }, 25);
     }).setName("clgui")
 
-
+    register("command", () => {
+        c.hardCheat = !c.hardCheat
+        ChatLib.chat(`${Prefix}HardCheat: ${c.hardCheat}`)
+    }).setName("bigfatfuckingcheater").setAliases("bffc")
 }

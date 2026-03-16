@@ -1,7 +1,8 @@
 import c from "../../config"
 import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils"
-import { chat, PlayerInteractEntityC2SPacket, rightClick } from "../../util/utils";
+import { PlayerInteractEntityC2SPacket, rightClick, Vec3 } from "../../util/utils";
 import RenderUtils from "../../../PrivateASF-Fabric/util/renderUtils";
+import { registerPacketChat } from "../../../PrivateASF-Fabric/util/Events";
 const EntityItemFrame = Java.type("net.minecraft.entity.decoration.ItemFrameEntity")
 const recentClickTimestamps = {};
 const frameGridCorner = { x: -2, y: 120, z: 75 };
@@ -151,7 +152,7 @@ const arrowAlignTB = register("step", () => {
                 rightClick(true, true)
                 lastFinalClick[frameIndex] = now
             }
-        } 
+        }
         else if (clicks < 3) {
             const now = Date.now()
             if (!lastFinalClick[frameIndex] || now - lastFinalClick[frameIndex] >= c.arrowAlignDelay * 2) {
@@ -252,6 +253,109 @@ c.registerListener("Arrow Align TriggerBot", (curr) => {
 
 })
 
+
+
+let inP3 = false;
+const solutions = [[7, 7, 7, 7, null, 1, null, null, null, null, 1, 3, 3, 3, 3, null, null, null, null, 1, null, 7, 7, 7, 1], [null, null, null, null, null, 1, null, 1, null, 1, 1, null, 1, null, 1, 1, null, 1, null, 1, null, null, null, null, null], [5, 3, 3, 3, null, 5, null, null, null, null, 7, 7, null, null, null, 1, null, null, null, null, 1, 3, 3, 3, null], [null, null, null, null, null, null, 1, null, 1, null, 7, 1, 7, 1, 3, 1, null, 1, null, 1, null, null, null, null, null], [null, null, 7, 7, 5, null, 7, 1, null, 5, null, null, null, null, null, null, 7, 5, null, 1, null, null, 7, 7, 1], [7, 7, null, null, null, 1, null, null, null, null, 1, 3, 3, 3, 3, null, null, null, null, 1, null, null, null, 7, 1], [5, 3, 3, 3, 3, 5, null, null, null, 1, 7, 7, null, null, 1, null, null, null, null, 1, null, 7, 7, 7, 1], [7, 7, null, null, null, 1, null, null, null, null, 1, 3, null, 7, 5, null, null, null, null, 5, null, null, null, 3, 3], [null, null, null, null, null, 1, 3, 3, 3, 3, null, null, null, null, 1, 7, 7, 7, 7, 1, null, null, null, null, null]];
+const deviceStandLocation = [0, 120, 77];
+const deviceCorner = [-2, 120, 75];
+const recentClicks = [];
+let currentFrames = null;
+
+function getCurrentFrames() {
+    const entities = World.getAllEntitiesOfType(EntityItemFrame);
+    const frames = {};
+
+    for (let entity of entities) {
+        const itemFrame = entity.toMC()
+        let pos = [itemFrame.getX(), itemFrame.getY(), itemFrame.getZ()].map(Math.floor);
+        let posStr = pos.join();
+        let mcItem = itemFrame.getHeldItemStack()
+        if (!mcItem) continue;
+        if (mcItem.getItem().toString() !== "minecraft:arrow") continue;
+        let rotation = itemFrame.getRotation();
+        frames[posStr] = { entity, rotation };
+    }
+
+    let [x, y0, z0] = deviceCorner;
+    let array = [];
+    for (let dz = 0; dz < 5; dz++) {
+        for (let dy = 0; dy < 5; dy++) {
+            let index = dy + dz * 5;
+            if (currentFrames && Date.now() - recentClicks[index] < 1000) {
+                array.push(currentFrames[index]);
+                continue;
+            }
+            let y = y0 + dy;
+            let z = z0 + dz;
+            let posStr = [x, y, z].join();
+            if (posStr in frames) {
+                array.push(frames[posStr]);
+                continue;
+            }
+            array.push(null);
+        }
+    }
+
+    return array;
+}
+
+const aura = register("tick", () => {
+    if (!dungeonUtils.inDungeon) return;
+    if ((Player.getX() - deviceStandLocation[0]) ** 2 + (Player.getY() - deviceStandLocation[1]) ** 2 + (Player.getZ() - deviceStandLocation[2]) ** 2 > 100) {
+        currentFrames = null;
+        return;
+    }
+    currentFrames = getCurrentFrames();
+    const rotations = currentFrames.map(frame => frame?.rotation ?? null);
+    const solution = solutions.find(solution => !solution.some((value, index) => value === null ^ rotations[index] === null));
+    if (!solution) return;
+    for (let z of Object.entries(currentFrames).sort((a, b) => a[1] && b[1] && ((Player.getX() - b[1].entity.toMC().getX()) ** 2 + (Player.getY() + Player.getPlayer().getEyeHeight(Player.getPlayer().getPose()) - b[1].entity.toMC().getY()) ** 2 + (Player.getZ() - b[1].entity.toMC().getZ()) ** 2) - ((Player.getX() - a[1].entity.toMC().getX()) ** 2 + (Player.getY() + Player.getPlayer().getEyeHeight(Player.getPlayer().getPose()) - a[1].entity.toMC().getY()) ** 2 + (Player.getZ() - a[1].entity.toMC().getZ()) ** 2))) {
+        let [index, frame] = z;
+        if (!frame) continue;
+        const entity = frame.entity.toMC();
+        const eyeHeight = Player.getY() + Player.getPlayer().getEyeHeight(Player.getPlayer().getPose())
+        if ((Player.getX() - entity.getX()) ** 2 + (eyeHeight - entity.getY()) ** 2 + (Player.getZ() - entity.getZ()) ** 2 > 25) continue;
+        let clicksNeeded = (solution[index] - frame.rotation + 8) % 8;
+        if (clicksNeeded <= 0) continue;
+        if (!entity) return;
+        if (!inP3 && currentFrames.filter((frame, index) => frame && (solution[index] - frame.rotation + 8) % 8 > 0).length <= 1) --clicksNeeded;
+        if (clicksNeeded > 0) recentClicks[index] = Date.now();
+        for (let i = 0; i < clicksNeeded; ++i) {
+            frame.rotation = (frame.rotation + 1) % 8;
+            const packet1 = PlayerInteractEntityC2SPacket.interact(
+                entity,
+                Player.isSneaking(),
+                Hand.MAIN_HAND
+            );
+            const packet2 = PlayerInteractEntityC2SPacket.interactAt(
+                entity,
+                Player.isSneaking(),
+                Hand.MAIN_HAND,
+                new Vec3(0.03125, 0.0, 0.0)
+            )
+            Client.sendPacket(packet2)
+            Client.sendPacket(packet1)
+        }
+        break;
+    }
+}).unregister()
+
+registerPacketChat((message) => {
+    if (message === "[BOSS] Goldor: Who dares trespass into my domain?") inP3 = true;
+    else if (message === "The Core entrance is opening!") inP3 = false;
+})
+
+register("worldUnload", () => {
+    inP3 = false;
+});
+
+c.registerListener("Arrow Align Aura", (curr) => {
+    if (curr) aura.register()
+    else aura.unregister()
+})
+
+if (c.alignAura) aura.register()
 
 
 
