@@ -79,6 +79,13 @@ class config {
         this.addDependency("Relic Pickup Aura", "hardCheatInternal")
         this.addDependency("Relic Place Aura", "hardCheatInternal")
         this.addDependency("Arrow Align Aura", "hardCheatInternal")
+        this.registerListener ("hardCheatInternal", (curr) => {
+            if (!curr) {
+                this.relicPickupAura = false
+                this.relicPlaceAura = false
+                this.alignAura = false
+            }
+        })
     }
     @SwitchProperty({
         name: "hardCheatInternal",
@@ -382,7 +389,7 @@ class config {
 
     @SwitchProperty({
         name: "SS Auto Rotate",
-        description: "Just full on autoSS &cworks but idk if I fucked up on any code :)",
+        description: "Auto rotate :), kinda like autoss with the triggerbot",
         category: "Device",
         subcategory: "SS"
     })

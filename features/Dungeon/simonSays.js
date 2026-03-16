@@ -222,7 +222,7 @@ const SSAutoStartRegister = register("chat", () => {
                 rightClick(true, false);
             });
         }, totalDelay);
-        if (i == 2 && c.SSAuto) {
+        if (i == 2 && c.SSAutoRotate) {
             Client.scheduleTask(Math.ceil(totalDelay / 50) + 2, () => {
                 rotateSmoothly(-90.2, 0.7, c.SSRotateDelay)
             })
@@ -374,7 +374,7 @@ const autoSSTB = register("step", () => {
     const next = clickInOrder[clickNeeded];
     if (!next) return;
     if (firstPhase) return;
-    if (rotatingTo !== clickNeeded && !rotationInProgress && c.SSAuto && !sneakLocked) {
+    if (rotatingTo !== clickNeeded && !rotationInProgress && c.SSAutoRotate && !sneakLocked) {
         rotatingTo = clickNeeded;
         rotationInProgress = true;
         const buttonX = next.x - 1 + 0.85 + plusMinus(0.05);

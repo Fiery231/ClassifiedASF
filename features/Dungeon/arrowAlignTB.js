@@ -255,7 +255,6 @@ c.registerListener("Arrow Align TriggerBot", (curr) => {
 
 
 
-let inP3 = false;
 const solutions = [[7, 7, 7, 7, null, 1, null, null, null, null, 1, 3, 3, 3, 3, null, null, null, null, 1, null, 7, 7, 7, 1], [null, null, null, null, null, 1, null, 1, null, 1, 1, null, 1, null, 1, 1, null, 1, null, 1, null, null, null, null, null], [5, 3, 3, 3, null, 5, null, null, null, null, 7, 7, null, null, null, 1, null, null, null, null, 1, 3, 3, 3, null], [null, null, null, null, null, null, 1, null, 1, null, 7, 1, 7, 1, 3, 1, null, 1, null, 1, null, null, null, null, null], [null, null, 7, 7, 5, null, 7, 1, null, 5, null, null, null, null, null, null, 7, 5, null, 1, null, null, 7, 7, 1], [7, 7, null, null, null, 1, null, null, null, null, 1, 3, 3, 3, 3, null, null, null, null, 1, null, null, null, 7, 1], [5, 3, 3, 3, 3, 5, null, null, null, 1, 7, 7, null, null, 1, null, null, null, null, 1, null, 7, 7, 7, 1], [7, 7, null, null, null, 1, null, null, null, null, 1, 3, null, 7, 5, null, null, null, null, 5, null, null, null, 3, 3], [null, null, null, null, null, 1, 3, 3, 3, 3, null, null, null, null, 1, 7, 7, 7, 7, 1, null, null, null, null, null]];
 const deviceStandLocation = [0, 120, 77];
 const deviceCorner = [-2, 120, 75];
@@ -301,7 +300,7 @@ function getCurrentFrames() {
 }
 
 const aura = register("tick", () => {
-    if (!dungeonUtils.inDungeon) return;
+    if (!dungeonUtils.inDungeon || !c.hardCheat || !c.alignAura) return;
     if ((Player.getX() - deviceStandLocation[0]) ** 2 + (Player.getY() - deviceStandLocation[1]) ** 2 + (Player.getZ() - deviceStandLocation[2]) ** 2 > 100) {
         currentFrames = null;
         return;
@@ -319,7 +318,7 @@ const aura = register("tick", () => {
         let clicksNeeded = (solution[index] - frame.rotation + 8) % 8;
         if (clicksNeeded <= 0) continue;
         if (!entity) return;
-        if (!inP3 && currentFrames.filter((frame, index) => frame && (solution[index] - frame.rotation + 8) % 8 > 0).length <= 1) --clicksNeeded;
+        if (dungeonUtils.currentPhase !== 3 && currentFrames.filter((frame, index) => frame && (solution[index] - frame.rotation + 8) % 8 > 0).length <= 1) --clicksNeeded;
         if (clicksNeeded > 0) recentClicks[index] = Date.now();
         for (let i = 0; i < clicksNeeded; ++i) {
             frame.rotation = (frame.rotation + 1) % 8;
@@ -341,51 +340,9 @@ const aura = register("tick", () => {
     }
 }).unregister()
 
-registerPacketChat((message) => {
-    if (message === "[BOSS] Goldor: Who dares trespass into my domain?") inP3 = true;
-    else if (message === "The Core entrance is opening!") inP3 = false;
-})
-
-register("worldUnload", () => {
-    inP3 = false;
-});
-
 c.registerListener("Arrow Align Aura", (curr) => {
-    if (curr) aura.register()
+    if (curr && c.hardCheat) aura.register()
     else aura.unregister()
 })
 
-if (c.alignAura) aura.register()
-
-
-
-
-
-// const nearbyFrames = World.getAllEntitiesOfType(EntityItemFrame).filter(frame => {
-
-//     return Player.toMC().distanceTo(frame.toMC()) <= 5;
-// });
-// nearbyFrames.forEach(frame => {
-//     const mcEntity = frame.toMC();
-//     const pos = mcEntity.getBlockPos();
-
-//     const x = Math.floor(pos.getX());
-//     const y = Math.floor(pos.getY());
-//     const z = Math.floor(pos.getZ());
-//     const frameIndex = (y - frameGridCorner.y) + (z - frameGridCorner.z) * 5;
-
-//     if (x === frameGridCorner.x && clicksRemaining.hasOwnProperty(frameIndex)) {
-
-//         const packet = PlayerInteractEntityC2SPacket.interact(
-//             frame.toMC(),
-//             Player.isSneaking(),
-//             Hand.MAIN_HAND
-//         );
-//         chat("sending packet")
-//         Client.sendPacket(packet);
-//     }
-// });
-//const InteractHandler = Java.type("net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket$InteractHandler");
-
-
-// ^^^ this is some align aura and idk if its bans
+if (c.alignAura && c.hardCheat) aura.register()

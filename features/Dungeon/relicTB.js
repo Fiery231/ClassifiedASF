@@ -130,7 +130,7 @@ const relicPlaceAura = register("tick", () => {
 
     if (placed) return;
 
-    let coords = placeblocks[relic]
+    let coords = placeblocks[relic.toLowerCase()]
     if (!coords) return;
 
     if (getDistance3D(Player.getX(), Player.getY(), Player.getZ(), coords[0], 7, coords[1]) < 6 && !placed) {

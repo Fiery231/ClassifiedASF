@@ -89,5 +89,10 @@ export default function ClassifiedASF() {
     register("command", () => {
         c.hardCheat = !c.hardCheat
         ChatLib.chat(`${Prefix}HardCheat: ${c.hardCheat}`)
+        if (!c.hardCheat) {
+            c.relicPickupAura = false
+            c.relicPlaceAura = false
+            c.alignAura = false
+        }
     }).setName("bigfatfuckingcheater").setAliases("bffc")
 }
