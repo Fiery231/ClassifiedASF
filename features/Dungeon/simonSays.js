@@ -241,7 +241,7 @@ const SSSolverReg1 = register("packetReceived", (packet) => {
     if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0) return;
     if (dungeonUtils.getStage() != 1 && dungeonUtils.getStage() != 0) return inP3S1 = false
     if (!firstPhase) return;
-    if (lastLanternTick++ > 10 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
+    if (lastLanternTick++ > 4 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
         firstPhase = false;
         startClickCounter = 0
     }

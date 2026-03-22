@@ -22,14 +22,14 @@ const leapStuff = register("clicked", (x, y, button, isDown) => {
     }
 
     else if (isDown && button === 0) {
-        if (Player.lookingAt() instanceof Entity) return
+        if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") return;
         if (isHoldingLeap()) {
             if (!c.fastLeapToggle) return
             if (Client.getMinecraft().field_1755 || Client.isInGui()) return;
 
             let leapTo = getLeap()
             if (!leapTo || !leapTo.length || !isHoldingLeap() || leapTo == Player.getName() || !dungeonUtils.party.has(leapTo)) return chat("&7Failed leap!");
-            if (Player.lookingAt() instanceof Block) rightClick(true, false)
+            if (Player.lookingAt() instanceof Block) rightClick(true, false, false)
             else rightClick(false, false, false)
             leapUtils.queueLeap(leapTo)
         }

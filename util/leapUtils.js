@@ -106,7 +106,7 @@ export default new class leapUtils {
         Player.setHeldItemIndex(leapID)
 
         Client.scheduleTask(1, () => {
-            rightClick(false, true)
+            rightClick(false, true, false)
             this.clickedLeap = true
         })
 

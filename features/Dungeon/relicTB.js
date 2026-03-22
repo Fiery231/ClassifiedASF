@@ -20,19 +20,25 @@ register("worldLoad", () => {
 })
 
 registerPacketChat((message) => {
-    if (message !== "[BOSS] Necron: All this, for nothing...") return;
+    if (message == "[BOSS] Necron: All this, for nothing...") {
+        if (c.relicPickupTB || c.relicPickupAura) {
+            if (c.relicPickupAura && c.hardCheat) relicPickupAura.register()
+            else if (c.relicPickupTB) relicPickupTB.register()
+        }
 
-    if (c.relicPickupTB || c.relicPickupAura) {
-        if (c.relicPickupAura && c.hardCheat) relicPickupAura.register()
-        else if (c.relicPickupTB) relicPickupTB.register()
+        if (c.relicPlaceAura || c.relicPlaceTB) {
+            if (c.relicPlaceAura && c.hardCheat) relicPlaceAura.register()
+            else if (c.relicPlaceTB) relicPlaceTB.register()
+        }
+        prevRelic = null
+        placed = false
     }
-
-    if (c.relicPlaceAura || c.relicPlaceTB) {
-        if (c.relicPlaceAura && c.hardCheat) relicPlaceAura.register()
-        else if (c.relicPlaceTB) relicPlaceTB.register()
+    else if (message == "[BOSS] The Wither King: You... again?") {
+        relicPickupAura.unregister()
+        relicPickupTB.unregister()
+        relicPlaceAura.unregister()
+        relicPlaceTB.unregister()
     }
-    prevRelic = null
-    placed = false
 })
 
 const relicPickupTB = register("renderWorld", () => {
@@ -111,7 +117,7 @@ const relicPlaceTB = register("renderWorld", () => {
     const pos = look.getPos()
     const [x, y, z] = [pos.getX(), pos.getY(), pos.getZ()]
 
-    if (x == coords[0] && z == coords[1] && (y == 6 || y == 7)) {
+    if (x == coords[0] && z == coords[1] && (y == 6 || y == 7) && Player.getHeldItem()?.getName()?.includes("Relic")) {
         rightClick(true, true, true, 3)
         placed = true
     }
