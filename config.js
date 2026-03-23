@@ -49,7 +49,7 @@ class config {
 
         this.addDependency("Melody Skip On", "Auto Melody")
         this.addDependency("Don't Skip First Slot", "Auto Melody")
-        this.addDependency("Only skip two on open", "Auto Melody")
+        this.addDependency("Skip on Open", "Auto Melody")
 
         this.addDependency("Auto sell delay", "Auto sell")
 
@@ -226,13 +226,14 @@ class config {
     })
     noSkipFirst = false
 
-    @SwitchProperty({
-        name: "Only skip two on open",
-        description: "",
+    @SelectorProperty({
+        name: "Skip on Open",
+        description: "How many to skip on open",
         category: "Terminals",
-        subcategory: "Melody"
+        subcategory: "Melody",
+        options: ["1", "2", "3"]
     })
-    onlySkip2 = false
+    onlySkip = 0;
 
     @SwitchProperty({
         name: "Terminal Trigger Bot",
