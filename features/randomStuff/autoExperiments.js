@@ -39,14 +39,14 @@ function resetStuff() {
 function solveChronomatron() {
     const maxChronomatron = c.AEmaxXP ? 15 : 11 - c.AEserumCount;
     const items = Player.getContainer().getItems()
-    if (items[49]?.getType().getName().includes('Glowstone') && hasGlint(items[lastAdded])) {
+    if (items[49]?.getType()?.getName()?.includes('Glowstone') && hasGlint(items[lastAdded])) {
         if (c.AEautoClose && chronomatronOrder.length > maxChronomatron && !closing) {
             closing = true;
             Client.getMinecraft().currentScreen.close()
         }
         hasAdded = false
     }
-    if (!hasAdded && items[49]?.getType().getName().includes('Clock')) {
+    if (!hasAdded && items[49]?.getType()?.getName()?.includes('Clock')) {
         for (let i = 10; i <= 43; i++) {
             if (items[i] && hasGlint(items[i])) {
                 chronomatronOrder.push(i)
@@ -68,7 +68,7 @@ function solveUltraSequencer() {
     const maxUltraSequencer = c.AEmaxXP ? 20 : 8 - c.AEserumCount;
     const items = Player.getContainer().getItems()
     if (items[49]?.getType()?.getName()?.includes('Clock')) hasAdded = false
-    if (!hasAdded && items[49]?.getType().getName().includes('Glowstone')) {
+    if (!hasAdded && items[49]?.getType()?.getName()?.includes('Glowstone')) {
         if (!items[44]) return
         ultrasequencerOrder = []
         for (let i = 9; i <= 44; i++) {

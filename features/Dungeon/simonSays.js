@@ -155,7 +155,7 @@ function processLogic(x, y, z, state) {
     const oldBlock = ssCache.get(key);
     ssCache.set(key, newBlock);
     const isPowered = state.toString().includes("powered=true");
-    const oldPowered = World.getBlockAt(x, y, z).getState().toString().includes("powered=true")
+    const oldPowered = World.getBlockAt(x, y, z)?.getState()?.toString()?.includes("powered=true")
 
     if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2]) {
         refreshSSCache()
@@ -179,7 +179,7 @@ function processLogic(x, y, z, state) {
             lastLanternTick = 0;
             if (firstPhase) {
                 //if (clickInOrder.length === 2) clickInOrder.reverse();
-                if (clickInOrder.length === 3) clickInOrder.splice(clickInOrder.length - 2, 1);
+                if (clickInOrder.length === 3) clickInOrder.splice(0, 1);
             }
         }
     }
