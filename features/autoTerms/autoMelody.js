@@ -15,6 +15,7 @@ let progress2 = [0, 0];
 const melodyRegex = /^Click the button on time!$/
 
 register("packetReceived", (packet, event) => {
+    if (!(packet instanceof OpenScreenS2CPacket)) return;
     const currentTitle = packet.getName().getString()
     cwid = packet.getSyncId()
 

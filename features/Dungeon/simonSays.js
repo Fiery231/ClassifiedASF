@@ -129,7 +129,7 @@ function rotateSmoothly(targetYaw, targetPitch, duration = 150) {
         rotate(yaw, pitch);
 
         if (progress >= 1) {
-            activeRotation.unregister();
+            if (activeRotation) activeRotation.unregister();
             activeRotation = null;
             rotationInProgress = false;
         }
@@ -155,7 +155,7 @@ function processLogic(x, y, z, state) {
     const oldBlock = ssCache.get(key);
     ssCache.set(key, newBlock);
     const isPowered = state.toString().includes("powered=true");
-    const oldPowered = World.getBlockAt(x, y, z)?.getState()?.toString()?.includes("powered=true")
+    const oldPowered = World.getBlockAt(x, y, z).getState().toString().includes("powered=true")
 
     if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2]) {
         refreshSSCache()
@@ -178,16 +178,18 @@ function processLogic(x, y, z, state) {
             );
             lastLanternTick = 0;
             if (firstPhase) {
-                //if (clickInOrder.length === 2) clickInOrder.reverse();
-                if (clickInOrder.length === 3) clickInOrder.splice(0, 1);
+                if (clickInOrder.length === 2) clickInOrder.reverse(); // maybe this fixes stuff but may break stuff
+                if (clickInOrder.length === 3) clickInOrder.splice(clickInOrder.length - 2, 1);
             }
         }
     }
     else if (x == 110) {
-        if (newBlock == "Air" && !firstPhase) resetSolution()
+        if (newBlock == "Air" && !firstPhase) {
+            if (grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.getState()?.getBlock()?.getName()?.getString()?.removeFormatting() === "Air").length > 8) resetSolution()
+        }
         else if (oldBlock == "Stone Button" && oldPowered) {
 
-            clickNeeded = clickInOrder.findIndex(pos => pos.x == x + 1 && pos.y == y && pos.z == z) + 1;
+            //clickNeeded = clickInOrder.findIndex(pos => pos.x == x + 1 && pos.y == y && pos.z == z) + 1; maybe this fixes stuff
             if (clickNeeded >= clickInOrder.length) {
                 resetSolution()
                 firstPhase = false;
@@ -214,7 +216,7 @@ const SSAutoStartRegister = register("chat", () => {
     for (let i = 0; i < 3; i++) {
         let randomFactor = 1 + (Math.random() * 0.2 - 0.1);
         let delay = c.SSAutoStartDelay ?? 150 * randomFactor * i;
-        if (i === 2) delay += 40;
+        //if (i === 2) delay += 40;
         totalDelay += delay;
 
         setTimeout(() => {

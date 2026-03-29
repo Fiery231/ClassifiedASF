@@ -51,22 +51,40 @@ const relicPickupTB = register("renderWorld", () => {
 }).unregister()
 
 const relicPickupAura = register("tick", () => {
+    const px = Player.getX()
+    const py = Player.getY()
+    const pz = Player.getZ()
+
     const stands = World.getAllEntitiesOfType(ArmorStand)
-    const entity = stands.find(e => e.getStackInSlot(5)?.toString()?.includes("Relic"))
+
+    const entity = stands.find(e => {
+        const name = e.getStackInSlot(5)?.toString()
+        if (!name || !name.includes("Relic")) return false
+
+        
+        const dist = getDistance3D(
+            px, py, pz,
+            e.getX(), e.getY(), e.getZ()
+        )
+
+        return dist < 4
+    })
+
     if (!entity) return
-    if (getDistance3D(Player.getX(), Player.getY(), Player.getZ(), entity.getX(), entity.getY(), entity.getZ()) < 4) {
-        interactEntity(entity)
-        Client.scheduleTask(1, () => relicPickupAura.unregister())
-    }
+
+    interactEntity(entity)
+    relicPickupAura.unregister()
 }).unregister()
 
 const interactEntity = (entity) => {
-    const y = entity.getHeight() ? entity.getHeight() - 0.1 : 1.85
+    const dy = entity.getHeight() / 2
+    const dx = 0.0
+    const dz = 0.0
     const packet = PlayerInteractEntityC2SPacket.interactAt(
         entity.toMC(),
         Player.isSneaking(),
         Hand.MAIN_HAND,
-        new Vec3(0, y, 0)
+        new Vec3(dx, dy, dz)
     );
     Client.sendPacket(packet)
 }
