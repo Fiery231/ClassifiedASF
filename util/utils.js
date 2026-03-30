@@ -41,7 +41,6 @@ export function leftClick(legitClick = false) {
 
         if (type === "BLOCK") mc.interactionManager.attackBlock(hit.getBlockPos(), hit.getSide())
         else if (type === "ENTITY") mc.interactionManager.attackEntity(mc.player, hit.getEntity())
-        else mc.inter
 
         mc.player.swingHand(Hand.field_5808)
     }

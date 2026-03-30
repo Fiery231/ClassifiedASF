@@ -155,7 +155,7 @@ function processLogic(x, y, z, state) {
     const oldBlock = ssCache.get(key);
     ssCache.set(key, newBlock);
     const isPowered = state.toString().includes("powered=true");
-    const oldPowered = World.getBlockAt(x, y, z).getState().toString().includes("powered=true")
+    const oldPowered = World?.getBlockAt(x, y, z)?.getState()?.toString()?.includes("powered=true")
 
     if (x === startButtonPos[0] && y === startButtonPos[1] && z === startButtonPos[2]) {
         refreshSSCache()
@@ -185,7 +185,7 @@ function processLogic(x, y, z, state) {
     }
     else if (x == 110) {
         if (newBlock == "Air" && !firstPhase) {
-            if (grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.getState()?.getBlock()?.getName()?.getString()?.removeFormatting() === "Air").length > 8) resetSolution()
+            if (grid.filter(([x, y, z]) => World?.getBlockAt(x, y, z)?.getState()?.getBlock()?.getName()?.getString()?.removeFormatting() === "Air").length > 8) resetSolution()
         }
         else if (oldBlock == "Stone Button" && oldPowered) {
 
@@ -243,7 +243,7 @@ const SSSolverReg1 = register("packetReceived", (packet) => {
     if (!(packet instanceof CommonPingS2CPacket) || packet.getParameter() == 0) return;
     if (dungeonUtils.getStage() != 1 && dungeonUtils.getStage() != 0) return inP3S1 = false
     if (!firstPhase) return;
-    if (lastLanternTick++ > 4 && grid.filter(([x, y, z]) => World.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
+    if (lastLanternTick++ > 4 && grid.filter(([x, y, z]) => World?.getBlockAt(x, y, z)?.type?.getName()?.removeFormatting() === "Stone Button").length > 8) {
         firstPhase = false;
         startClickCounter = 0
     }
