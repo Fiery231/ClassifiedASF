@@ -79,6 +79,8 @@ class config {
         this.addDependency("Relic Pickup Aura", "hardCheatInternal")
         this.addDependency("Relic Place Aura", "hardCheatInternal")
         this.addDependency("Arrow Align Aura", "hardCheatInternal")
+        this.addDependency("Insta Mid", "hardCheatInternal")
+        this.addDependency("Insta Mid Freeze Time", "hardCheatInternal")
         this.registerListener ("hardCheatInternal", (curr) => {
             if (!curr) {
                 this.relicPickupAura = false
@@ -320,6 +322,25 @@ class config {
         subcategory: "§dAuras"
     })
     alignAura = false
+
+    @SwitchProperty({
+        name: "Insta Mid",
+        description: "idk if it bans, tested atleast a hundred times on alt so...",
+        category: "Boss",
+        subcategory: "§fIMid"
+    })
+    instaMid = false;
+
+    @SliderProperty({
+        name: "Insta Mid Freeze Time",
+        description: "(default: 6000) Play around with it if you want, low values may break more often",
+        category: "Boss",
+        subcategory: "§fIMid",
+        min: 5000,
+        max: 8000,
+        increment: 1,
+    })
+    instaMidTime = 6000;
 
     @SwitchProperty({
         name: "SS Auto Start",

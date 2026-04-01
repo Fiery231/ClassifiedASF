@@ -9,7 +9,7 @@ const BLACKLIST = [
 const CACHE_BUST = `&t=${Date.now()}`;
 const API_URL = `https://api.github.com/repos/Fiery231/ClassifiedASF/git/trees/main?recursive=1${CACHE_BUST}`;
 const RAW_BASE = `https://raw.githubusercontent.com/Fiery231/ClassifiedASF/main/`;
-//const COMMIT_API = "https://api.github.com/repos/Fiery231/ClassifiedASF/commits/main";
+const COMMIT_API = "https://api.github.com/repos/Fiery231/ClassifiedASF/commits/main?t=" + Date.now();
 
 const File = Java.type("java.io.File");
 
@@ -177,6 +177,7 @@ function checkForUpdates() {
             }
 
             Client.scheduleTask(40, () => {
+                const commitMessage = getLatestCommitMessage();
                 if (isOutdated(localVersion, remoteVersion)) {
                     const msg = new TextComponent(
                         "",
@@ -193,6 +194,7 @@ function checkForUpdates() {
                         }
                     );
                     msg.chat();
+                    chat(`&7Latest commit: &f${commitMessage}`)
                     Client.showTitle("&aClassified Update", "", 0, 20, 0) 
                 }
                 else {
@@ -201,10 +203,37 @@ function checkForUpdates() {
             });
 
         } catch (e) {
-            console.error("Version check failed:", e);
+            console.log("Version check failed:", e);
         }
     }).start();
 }
+
+function getLatestCommitMessage() {
+    try {
+        const connection = new java.net.URL(COMMIT_API).openConnection();
+        connection.setRequestProperty("User-Agent", "ChatTriggers-CommitCheck");
+
+        const reader = new java.io.BufferedReader(
+            new java.io.InputStreamReader(connection.getInputStream())
+        );
+
+        let response = "";
+        let line;
+        while ((line = reader.readLine()) !== null) response += line;
+        reader.close();
+
+        const commitData = JSON.parse(response);
+
+        // Only first line (cleaner)
+        return commitData.commit.message.split("\n")[0];
+
+    } catch (e) {
+        console.log("Failed to get commit message:", e);
+        return "Unknown";
+    }
+}
+
+
 
 let firstConnect = true
 
