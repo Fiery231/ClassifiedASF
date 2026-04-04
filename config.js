@@ -81,6 +81,7 @@ class config {
         this.addDependency("Arrow Align Aura", "hardCheatInternal")
         this.addDependency("Insta Mid", "hardCheatInternal")
         this.addDependency("Insta Mid Freeze Time", "hardCheatInternal")
+        this.addDependency("Insta Mid Send Packet", "hardCheatInternal")
         this.registerListener ("hardCheatInternal", (curr) => {
             if (!curr) {
                 this.relicPickupAura = false
@@ -325,11 +326,19 @@ class config {
 
     @SwitchProperty({
         name: "Insta Mid",
-        description: "idk if it bans, tested atleast a hundred times on alt so...",
+        description: "Instamid with or without packet sending (no packet sending = just freeze game)",
         category: "Boss",
         subcategory: "§fIMid"
     })
     instaMid = false;
+
+    @SwitchProperty({
+        name: "Insta Mid Send Packet",
+        description: "Might make it more consistent but also maybe more DTC idk, Ive mainly used with this on",
+        category: "Boss",
+        subcategory: "§fIMid"
+    })
+    instaMidPacket = false;
 
     @SliderProperty({
         name: "Insta Mid Freeze Time",

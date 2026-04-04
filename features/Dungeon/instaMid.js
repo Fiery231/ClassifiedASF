@@ -19,7 +19,7 @@ const instaMidTrigger = register("packetSent", (packet, event) => {
     if (!riding && !preparing && freezePos) {
         instaMidTrigger.unregister()
         preparing = true;
-        Client.sendPacket(new PlayerMoveFull(freezePos.x, freezePos.y, freezePos.z, freezePos.yaw, freezePos.pitch, false, false))
+        if (c.instaMidPacket) Client.sendPacket(new PlayerMoveFull(freezePos.x, freezePos.y, freezePos.z, freezePos.yaw, freezePos.pitch, false, false))
         chat("attempting to instamid")
         packetSentTime = Date.now()
         Client.scheduleTask(20, () => midListener.register())
@@ -72,7 +72,7 @@ const testThingy = register("packetReceived", (packet) => {
         Thread.sleep(c.instaMidTime)
         preparing = false
     })
-    Thread.sleep(c.instaMidTime)
+    //Thread.sleep(c.instaMidTime)
 }).setFilteredClass(CommonPingS2CPacket).unregister()
 
 register("worldLoad", () => {
