@@ -4,10 +4,11 @@ import { CloseHandledScreenC2SPacket } from "../../util/utils"
 const STAGES = {
     IDLE: 0,
     GET_STASH: 1,
-    BAZAAR: 2,
-    ARE_YOU_SURE: 3,
-    CLOSE_BAZAAR: 4,
-    AWAIT_STASH: 5
+    DROP_BOOKS: 2,
+    BAZAAR: 3,
+    ARE_YOU_SURE: 4,
+    CLOSE_BAZAAR: 5,
+    AWAIT_STASH: 6
 }
 
 let isFinalRun = false
@@ -20,6 +21,7 @@ const confirmMenu = "Are you sure?"
 register("command", () => {
     autoStash.register()
     killGui.register()
+    guiKill.register()
     ChatLib.command("pickupstash items")
     isFinalRun = false
     stage = STAGES.AWAIT_STASH
@@ -31,24 +33,30 @@ const autoStash = registerPacketChat((message) => {
         if (match[1] === "all") {
             isFinalRun = true
         }
-        stage = STAGES.BAZAAR
-        ChatLib.command("bz")
-        tickListener.register()
+        stage = STAGES.DROP_BOOKS
+        ChatLib.command("wd")
+        //ChatLib.command("bz")
+        throwBooks.register()
+        throwBookTicks = 1
     }
     else if (message == "Your stash isn't holding any items or materials!") Client.scheduleTask(5, () => killSwitch())
     else if (message == "Couldn't unstash your item stash! Your inventory is full!") {
-        stage = STAGES.BAZAAR
-        ChatLib.command("bz")
-        tickListener.register()
+        stage = STAGES.DROP_BOOKS
+        ChatLib.command("wd")
+        //ChatLib.command("bz")
+        throwBooks.register()
+        throwBookTicks = 1
     }
-    else if (message == "You may only use this command after 4s on the server!" || message == "[Bazaar] You don't have anything to sell!" || message == "You can't use this when the server is about to restart!" || message == "[Bazaar] No items could be matched to buyers!") killSwitch()
+    else if (message == "[Bazaar] You don't have anything to sell!") {
+        stage = STAGES.CLOSE_BAZAAR
+    }
+    else if (message == "You may only use this command after 4s on the server!" || message == "You can't use this when the server is about to restart!") killSwitch()
 }).unregister()
 
-let ticks = 0
+let ticks = 1
 let lastPickupTime = 0
-const PICKUP_TIMEOUT = 1000
 const tickListener = register("tick", () => {
-    if (ticks++ % 10 != 0) return;
+    if (ticks++ % 9 != 0) return;
     let clickType = "MIDDLE"
     let shiftClick = false;
     ChatLib.chat(stage)
@@ -59,13 +67,13 @@ const tickListener = register("tick", () => {
     }
     else if (stage == STAGES.IDLE) return killSwitch()
     else if (stage == STAGES.AWAIT_STASH) {
-        if (Date.now() - lastPickupTime > PICKUP_TIMEOUT) {
+        if (Date.now() - lastPickupTime > 1500) {
             ChatLib.command("pickupstash items")
             lastPickupTime = Date.now()
             ChatLib.chat("Resending /pickupstash due to timeout...")
         }
     }
-    
+
     const container = Player.getContainer();
     if (!container) return;
     const containerName = container.getName().toString().removeFormatting()
@@ -86,6 +94,117 @@ const tickListener = register("tick", () => {
     }
 }).unregister()
 
+const uselessbooks = ["FEATHER_FALLING", "ULTIMATE_COMBO", "INFINITE_QUIVER", "ULTIMATE_BANK", "ULTIMATE_NO_PAIN_NO_GAIN", "ULTIMATE_JERRY"]
+
+let throwBookTicks = 1
+const throwBooks = register("tick", () => {
+    if (throwBookTicks > 100) {
+        killGui()
+        ChatLib.chat("why are you still here? Run command again :)")
+        return;
+    }
+    if (throwBookTicks++ % 6 != 0) return;
+    const inv = Player.getContainer();
+
+    if (!inv || !inv.getName().toString().removeFormatting().includes("Wardrobe")) {
+        ChatLib.chat("Open your wardrobe first");
+        return;
+    }
+
+    let foundBook = false;
+
+    for (let i = 0; i < inv.getSize(); i++) {
+        const item = inv.getStackInSlot(i);
+        if (!item) continue;
+
+        const name = item.getName().removeFormatting();
+        
+        if (name.startsWith("Enchanted Book") && uselessbooks.includes(getSingleEnchantBook(item))) {
+            ChatLib.chat(`Dropping slot ${i}`);
+            inv.drop(i, true);
+            foundBook = true;
+            throwBookTicks = 1
+            break;
+        }
+    }
+
+    if (!foundBook) {
+        tickListener.register()
+        throwBooks.unregister()
+        stage = STAGES.BAZAAR
+        ticks = 1
+        ChatLib.command("bz") 
+    }
+}).unregister()
+
+const clickCloseItem = (items) => {
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        if (!item) continue;
+
+        const typeName = item.getType().getName().removeFormatting();
+        const itemName = item.getName().removeFormatting();
+
+        if (typeName.includes("Barrier") && itemName.includes("Close")) {
+            Player.getContainer().click(i, false, "MIDDLE");
+            break; 
+        }
+    }
+    
+}
+
+function getSingleEnchantBook(item) {
+    if (!item) return null;
+
+    try {
+        const nbtString = item.getNBT().toString();
+        const customData = extractCustomData(nbtString);
+        if (!customData) return null;
+
+        const idMatch = customData.match(/\bid:"([^"]+)"/);
+        if (!idMatch) return null;
+
+        const id = idMatch[1];
+        if (id !== "ENCHANTED_BOOK") return null;
+
+        const enchantMatch = customData.match(/enchantments:\{([^}]+)\}/);
+        if (!enchantMatch) return null;
+
+        const enchants = enchantMatch[1]
+            .split(",")
+            .map(e => e.split(":")[0].toUpperCase());
+
+        if (enchants.length !== 1) return null;
+
+        return enchants[0];
+    } catch (e) {
+        console.error("Failed to parse enchanted book:", e);
+        return null;
+    }
+}
+
+function extractCustomData(nbtString) {
+    const startKey = "minecraft:custom_data=>{";
+    const startIndex = nbtString.indexOf(startKey);
+    if (startIndex === -1) return null;
+
+    let i = startIndex + startKey.length;
+    let depth = 1;
+    let result = "";
+
+    while (i < nbtString.length && depth > 0) {
+        const char = nbtString[i];
+
+        if (char === "{") depth++;
+        if (char === "}") depth--;
+
+        if (depth > 0) result += char;
+        i++;
+    }
+
+    return result;
+}
+
 const killGui = register("packetSent", () => {
     killSwitch()
 }).setFilteredClass(CloseHandledScreenC2SPacket).unregister()
@@ -96,9 +215,13 @@ const killSwitch = () => {
     tickListener.unregister()
     guiKill.unregister()
     killGui.unregister()
+    throwBooks.unregister()
     ChatLib.chat("kill switch")
 }
 
 const guiKill = register("guiKey", () => {
     killSwitch()
 }).unregister()
+
+
+
