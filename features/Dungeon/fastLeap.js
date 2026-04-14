@@ -29,12 +29,20 @@ const leapStuff = register("clicked", (x, y, button, isDown) => {
 
             let leapTo = getLeap()
             if (!leapTo || !leapTo.length || !isHoldingLeap() || leapTo == Player.getName() || !dungeonUtils.party.has(leapTo)) return chat("&7Failed leap!");
-            if (Player.lookingAt() instanceof Block) rightClick(true, false, false)
-            else rightClick(false, false, false)
-            leapUtils.queueLeap(leapTo)
+            // if (Player.lookingAt() instanceof Block) rightClick(true, false, false)
+            // else rightClick(false, false, false)
+            tryLeap(leapTo)
         }
     }
 }).unregister()
+
+const tryLeap = (leapTo) => {
+    const mc = Client.getMinecraft()
+    const hit = mc.crosshairTarget
+    if (!hit) return;
+    mc.interactionManager.interactItem(mc.player, Hand.field_5808)
+    leapUtils.queueLeap(leapTo)
+}
 
 dungeonUtils.registerWhenInDungeon(leapStuff)
 
