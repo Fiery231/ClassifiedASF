@@ -3,6 +3,7 @@ import { CommonPingS2CPacket, rightClick } from "../../util/utils";
 import RenderUtils from "../../../PrivateASF-Fabric/util/renderUtils"
 import { data, drawText, registerOverlay } from "../../managers/guiManager";
 import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils";
+import rotationUtils from "../../util/rotationUtils";
 
 const startButtonPos = [110, 121, 91];
 const grid = [
@@ -35,7 +36,6 @@ let inP3S1 = false
 let isDoingSS = false
 let lastClick = Date.now()
 let rotatingTo = -1;
-let rotationInProgress = false;
 let sneakLocked = false
 
 function resetSolution() {
@@ -59,82 +59,6 @@ function getPlayerEyeCoords() {
         Player.getY() + eyeHeight,
         Player.getZ()
     ];
-}
-
-function getYawPitch(x, y, z) {
-    const [px, py, pz] = getPlayerEyeCoords();
-
-    const dx = x - px;
-    const dy = y - py;
-    const dz = z - pz;
-
-    const dist = Math.sqrt(dx * dx + dz * dz);
-
-    const yaw = Math.atan2(dz, dx) * 180 / Math.PI - 90;
-    const pitch = -(Math.atan2(dy, dist) * 180 / Math.PI);
-
-    return [yaw, pitch];
-}
-
-function rotate(yaw, pitch) {
-    if (Number.isNaN(yaw) || Number.isNaN(pitch)) return;
-
-    Player.getPlayer().setYaw(yaw)
-    Player.getPlayer().setPitch(pitch)
-}
-
-let activeRotation = null;
-
-function normalizeYaw(yaw) {
-    while (yaw > 180) yaw -= 360;
-    while (yaw < -180) yaw += 360;
-    return yaw;
-}
-
-function getShortestYaw(from, to) {
-    let diff = normalizeYaw(to - from);
-    if (diff > 180) diff -= 360;
-    if (diff < -180) diff += 360;
-    return diff;
-}
-
-function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
-}
-
-function rotateSmoothly(targetYaw, targetPitch, duration = 150) {
-
-    if (activeRotation) activeRotation.unregister();
-
-    const startYaw = Player.getYaw();
-    const startPitch = Player.getPitch();
-
-    const yawDiff = getShortestYaw(startYaw, targetYaw);
-    const pitchDiff = targetPitch - startPitch;
-
-    const startTime = Date.now();
-
-    rotationInProgress = true;
-
-    activeRotation = register("step", () => {
-
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        const eased = easeOutCubic(progress);
-
-        const yaw = startYaw + yawDiff * eased;
-        const pitch = startPitch + pitchDiff * eased;
-
-        rotate(yaw, pitch);
-
-        if (progress >= 1) {
-            if (activeRotation) activeRotation.unregister();
-            activeRotation = null;
-            rotationInProgress = false;
-        }
-
-    }).setFps(120); // very smooth
 }
 
 
@@ -170,7 +94,7 @@ function processLogic(x, y, z, state) {
         resetSolution();
         firstPhase = true;
         rotatingTo = -1
-        rotationInProgress = false
+        rotationUtils.stopRotation()
         return;
     }
 
@@ -212,7 +136,7 @@ register("worldLoad", () => {
     firstPhase = true;
     startClickCounter = 0;
     rotatingTo = -1
-    rotationInProgress = false
+    rotationUtils.stopRotation()
 });
 
 const SSAutoStartRegister = register("chat", () => {
@@ -234,7 +158,7 @@ const SSAutoStartRegister = register("chat", () => {
         }, totalDelay);
         if (i == 2 && c.SSAutoRotate) {
             Client.scheduleTask(Math.ceil(totalDelay / 50) + 2, () => {
-                rotateSmoothly(-90.2, 0.7, c.SSRotateDelay)
+                rotationUtils.rotateSmoothly(-90.2, 0.7, c.SSRotateDelay)
             })
         }
     }
@@ -380,19 +304,21 @@ const autoSSTB = register("step", () => {
         sneakLocked = true;
         return;
     }
-    if (!isAtSS() || !isDoingSS) return isDoingSS = false;
+    if (!isAtSS() || !isDoingSS) {
+        isDoingSS = false;
+        return
+    }
     const next = clickInOrder[clickNeeded];
     if (!next) return;
     if (firstPhase) return;
-    if (rotatingTo !== clickNeeded && !rotationInProgress && c.SSAutoRotate && !sneakLocked) {
+    if (rotatingTo !== clickNeeded && !rotationUtils.isRotating() && c.SSAutoRotate && !sneakLocked) {
         rotatingTo = clickNeeded;
-        rotationInProgress = true;
         const buttonX = next.x - 1 + 0.85 + plusMinus(0.05);
         const buttonY = next.y + 0.5 + plusMinus(0.08);
         const buttonZ = next.z + 0.5 + plusMinus(0.15);
-        const [yaw, pitch] = getYawPitch(buttonX, buttonY, buttonZ);
+        const [yaw, pitch] = rotationUtils.calcYawPitch(buttonX, buttonY, buttonZ);
 
-        rotateSmoothly(yaw, pitch, c.SSRotateDelay);
+        rotationUtils.rotateSmoothly(yaw, pitch, c.SSRotateDelay);
     }
     if (Date.now() - lastClick < (c.SSTBDelay ?? 150)) return
     const lookingAt = Player.lookingAt();
@@ -403,7 +329,7 @@ const autoSSTB = register("step", () => {
         lastClick = Date.now();
         clickNeeded++;
         rotatingTo = -1;
-        rotationInProgress = false;
+        rotationUtils.stopRotation()
     }
 }).setFps(100).unregister()
 

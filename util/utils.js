@@ -27,6 +27,15 @@ export function chat(msg) {
     ChatLib.chat(`${getPrefix()} &r${msg}`)
 }
 
+export const getPlayerCoords = () => {
+    return [Player.getX(), Player.getY(), Player.getZ()]
+}
+
+export const getDistanceToCoord = (x, y, z) => {
+    let [x0, y0, z0] = getPlayerCoords()
+    return getDistance3D(x0, y0, z0, x, y, z)
+}
+
 export function leftClick(legitClick = false) {
     if (legitClick) {
         Client.getMinecraft().options["attackKey"].setPressed(true)
@@ -64,6 +73,13 @@ export function rightClick(shouldSwing = false, legitClick = false, trigEntity =
     }
 }
 
+export function rightClickItem() {
+    const mc = Client.getMinecraft()
+    const hit = mc.crosshairTarget
+    if (!hit) return;
+    mc.interactionManager.interactItem(mc.player, Hand.field_5808)
+}
+
 
 export function pressMovementKey(key, state, exec) {
     if (['backKey', 'rightKey', 'leftKey', 'sprintKey', 'forwardKey', 'attackKey', 'sneakKey', 'useKey', 'jumpKey'].includes(key)) {
@@ -95,3 +111,4 @@ export function getSequence() {
     const sequence = Number(updateManager.method_41942()) || 0;
     return sequence
 }
+

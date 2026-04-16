@@ -99,17 +99,28 @@ export default new class leapUtils {
         if (this.inProgress) return;
 
         const leapID = Player.getInventory().getItems().slice(0, 9).findIndex(a => a?.getName()?.toLowerCase()?.includes('leap'))
-        if (!leapID || leapID === -1) return;
+        if (!leapID || leapID === -1){
+            this.clickedLeap = false
+            this.inProgress = false
+            this.leapQueue.shift()
+            return
+        };
 
         this.inProgress = true;
 
         Player.setHeldItemIndex(leapID)
 
         Client.scheduleTask(1, () => {
-            rightClick(false, true, false)
+            this.tryLeap(name)
             this.clickedLeap = true
         })
+    }
 
-        this.leapQueue.push(name)
+    tryLeap(leapTo) {
+        const mc = Client.getMinecraft()
+        const hit = mc.crosshairTarget
+        if (!hit) return;
+        mc.interactionManager.interactItem(mc.player, Hand.field_5808)
+        this.queueLeap(leapTo)
     }
 }

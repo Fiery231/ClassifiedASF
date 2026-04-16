@@ -36,6 +36,13 @@ class config {
         this.addDependency("Invert Sneak", "Arrow Align Solver")
         this.addDependency("Block Wrong Clicks", "Arrow Align Solver")
 
+        this.addDependency("Auto4 Prediction", "Auto4")
+        this.addDependency("Auto4 Start Early", "Auto4")
+        this.addDependency("Auto4 Auto Leap", "Auto4")
+        this.addDependency("Auto4 Prediction Timeout", "Auto4")
+        this.addDependency("Auto4 Rod", "Auto4")
+        this.addDependency("Auto4 Rotate Delay", "Auto4")
+
         this.addDependency("SS Auto Start Delay", "SS Auto Start")
         this.addDependency("SS Display Progress", "SS Solver")
         this.addDependency("SS Block Wrong Clicks", "SS Solver")
@@ -350,6 +357,71 @@ class config {
         increment: 1,
     })
     instaMidTime = 6000;
+
+    @SwitchProperty({
+        name: "Auto4",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "I4"
+    })
+    Auto4 = false;
+
+    @SwitchProperty({
+        name: "Auto4 Rod",
+        description: "auto rod for i4",
+        category: "Device",
+        subcategory: "I4"
+    })
+    Auto4Rod = false
+
+    @SwitchProperty({
+        name: "Auto4 Start Early",
+        description: "Start Prefiring early (aka no debuff)",
+        category: "Device",
+        subcategory: "I4"
+    })
+    Auto4Early = false
+
+    @SwitchProperty({
+        name: "Auto4 Auto Leap",
+        description: "Start Prefiring early (aka no debuff)",
+        category: "Device",
+        subcategory: "I4"
+    })
+    Auto4Leap = false
+
+    @SelectorProperty({
+        name: "Auto4 Prediction",
+        description: "&cWIP",
+        category: "Device",
+        subcategory: "I4",
+        options: ["0", "1", "2", "3", "4"]
+    })
+    Auto4Prediction = 0;
+
+    @SliderProperty({
+        name: "Auto4 Prediction Timeout",
+        description: "When to retry shooting the emerald (Default: 10)",
+        category: "Device",
+        subcategory: "I4",
+        min:5,
+        max:20,
+        increment:1
+    })
+    Auto4Timeout = 10;
+
+    @SliderProperty({
+        name: "Auto4 Rotate Delay",
+        description: "",
+        category: "Device",
+        subcategory: "I4",
+        min:0,
+        max:300,
+        increment:1
+    })
+    Auto4Rotate = 10;
+    
+
 
     @SwitchProperty({
         name: "SS Auto Start",
