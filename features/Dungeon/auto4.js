@@ -30,11 +30,17 @@ let shots = 0
 let timeStarted
 let active = false
 let lastShot = Date.now()
+let devicedone = false
+let rodding = false
 
 register("worldUnload", () => {
     restartI4()
     active = false
     start4(active)
+    devicedone = false
+    rodding = false
+    BlockListener.unregister()
+    MultiBlockListener.unregister()
 })
 
 
@@ -58,8 +64,6 @@ const start4 = (bool) => {
     else {
         auto4stuff.unregister()
         auto4solver.unregister()
-        BlockListener.unregister()
-        MultiBlockListener.unregister()
     }
 }
 
@@ -170,17 +174,17 @@ const auto4stuff = register("step", () => {
     if (!blockToShoot) return
     let offset = 0.5
     if (Player.getHeldItem()?.getName()?.includes("Terminator")) offset = blockToShoot.x === 64 ? 1.3 : -0.6
-    let [yaw, pitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
+    let [yaw, pitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1, blockToShoot.z);
     if (c.Auto4Randomize) {
         yaw += getRandom(-0.5, 0.5)
         pitch += getRandom(-0.5, 0.5)
     }
+
     if (c.Auto4Rotate > 0) {
         rotationUtils.rotateSmoothly(yaw, pitch, c.Auto4Rotate ?? 100, () => {
             lastShot = Date.now()
             rightClickItem()
             shots++;
-            rotationUtils.stopRotation()
         });
     }
     else {
@@ -188,7 +192,6 @@ const auto4stuff = register("step", () => {
         shots++
         lastShot = Date.now()
         rightClickItem()
-        rotationUtils.stopRotation()
     }
 }).setFps(100).unregister()
 
@@ -216,12 +219,14 @@ registerPacketChat((message) => {
         restartI4()
         active = true
         start4(active)
+        devicedone = false
         return;
     }
     else if (message == "[BOSS] Storm: I should have known that I stood no chance." && c.Auto4Early) {
         restartI4()
         active = true
         start4(active)
+        devicedone = false
         return;
     }
     else if (/^(?:Your (?:⚚ )?Bonzo's Mask saved your life!|Second Wind Activated! Your Spirit Mask saved your life!)$/.test(message)) {
@@ -230,16 +235,24 @@ registerPacketChat((message) => {
         const rodSlot = Player.getInventory().getItems().findIndex(item => item?.getName().toLowerCase().includes("rod"))
         if (rodSlot > 7 || rodSlot < 0) return
         setTimeout(() => {
-            if (getDistanceToCoord(63.5, 127, 35.5) > 0.75 || !active) return
+            if (getDistanceToCoord(63.5, 127, 35.5) > 0.75 || !active || devicedone) return
+            rodding = true
             active = false
-            start4(active)
+            //start4(active)
             const heldItemIndex = Player.getHeldItemIndex()
-            Client.scheduleTask(1, () => Player.setHeldItemIndex(rodSlot))
-            Client.scheduleTask(2, () => rightClickItem())
+            Client.scheduleTask(1, () => {if (!devicedone) Player.setHeldItemIndex(rodSlot)})
+            Client.scheduleTask(2, () => {if (!devicedone) rightClickItem()})
             Client.scheduleTask(3, () => {
-                Player.setHeldItemIndex(heldItemIndex)
-                active = true
-                start4(active)
+                if (devicedone) {
+                    I4AutoLeap()
+                }
+                else {
+                    Player.setHeldItemIndex(heldItemIndex)
+                    active = true
+                    rodding = false
+                    //start4(active)
+                }
+                
             })
         }, 2500)
     }
@@ -248,18 +261,26 @@ registerPacketChat((message) => {
     active = false
     start4(active)
     chat(`i4 took ${((Date.now() - timeStarted) / 1000).toFixed(2)} seconds and ${shots} shots to finish.`)
+    devicedone = true
     rotationUtils.stopRotation()
     if (c.Auto4Leap) {
-        const user = getUserName(c.i4Leap)
-        if (user) leapUtils.autoLeap(user)
+        if (!rodding) I4AutoLeap()
     }
 })
+
+const I4AutoLeap = () => {
+    const user = getUserName(c.i4Leap)
+    if (user) {
+        chat("Auto Leaping to " + user)
+        leapUtils.autoLeap(user)
+    }
+}
 
 const BlockListener = register("packetReceived", (packet, event) => {
     if (!active) return
     const pos = packet.getPos();
     const positionXYZ = { x: pos.getX(), y: pos.getY(), z: pos.getZ() };
-    
+
     const originalBlock = blocks.find(b => b.x === positionXYZ.x && b.y === positionXYZ.y && b.z === positionXYZ.z);
     if (!originalBlock) return;
 
@@ -283,7 +304,7 @@ const MultiBlockListener = register("packetReceived", (packet, event) => {
     if (!active) return;
     packet.visitUpdates((pos, state) => {
         const positionXYZ = { x: pos.getX(), y: pos.getY(), z: pos.getZ() };
-        
+
         const originalBlock = blocks.find(b => b.x === positionXYZ.x && b.y === positionXYZ.y && b.z === positionXYZ.z);
         if (!originalBlock) return;
 
