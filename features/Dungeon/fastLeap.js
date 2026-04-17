@@ -24,20 +24,17 @@ const leapStuff = register("clicked", (x, y, button, isDown) => {
     }
 
     else if (isDown && button === 0) {
-        if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") return;
         if (isHoldingLeap()) {
             if (!c.fastLeapToggle) return
-            
-            let leapTo = getLeap()
-            if (!leapTo || !leapTo.length || !isHoldingLeap() || leapTo == Player.getName() || !dungeonUtils.party.has(leapTo)) return chat("&7Failed leap!");
-
-            if (terminalUtils.inTerm) {
+            if (c.queueLeapToggle && terminalUtils.inTerm) {
+                if (queued) chat("&eLeap Already Queued");
                 queued = true;
                 queueLeap.register()
                 chat("&eQueued leap!")
                 return;
             }
-            leapUtils.tryLeap(leapTo)
+            if (Client.getMinecraft().field_1755 || Client.isInGui() || queued) return;
+            leap()
         }
     }
 }).unregister()
@@ -46,8 +43,15 @@ const queueLeap = register("step", () => {
     if (terminalUtils.inTerm) return;
     queueLeap.unregister();
     queued = false;
-    leapUtils.tryLeap(leapTo);
+    leap()
 }).setFps(5).unregister();
+
+const leap = () => {
+    if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") return;
+    let leapTo = getLeap()
+    if (!leapTo || !leapTo.length || !isHoldingLeap() || leapTo == Player.getName() || !dungeonUtils.party.has(leapTo)) return chat("&7Failed leap!");
+    leapUtils.tryLeap(leapTo);
+}
 
 dungeonUtils.registerWhenInDungeon(leapStuff)
 

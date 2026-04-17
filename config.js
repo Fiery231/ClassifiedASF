@@ -363,7 +363,7 @@ class config {
         name: "Auto4",
         description: "&cWIP",
         category: "Device",
-        subcategory: "I4"
+        subcategory: "Auto4"
     })
     Auto4 = false;
 
@@ -371,7 +371,7 @@ class config {
         name: "Auto4 Rod",
         description: "auto rod for i4",
         category: "Device",
-        subcategory: "I4"
+        subcategory: "Auto4"
     })
     Auto4Rod = false
 
@@ -379,7 +379,7 @@ class config {
         name: "Auto4 Start Early",
         description: "Start Prefiring early (aka no debuff)",
         category: "Device",
-        subcategory: "I4"
+        subcategory: "Auto4"
     })
     Auto4Early = false
 
@@ -387,7 +387,7 @@ class config {
         name: "Auto4 Auto Leap",
         description: "Will auto leap to your fastleap i4 player",
         category: "Device",
-        subcategory: "I4"
+        subcategory: "Auto4"
     })
     Auto4Leap = false
 
@@ -395,7 +395,7 @@ class config {
         name: "Auto4 Prediction",
         description: "&cWIP",
         category: "Device",
-        subcategory: "I4",
+        subcategory: "Auto4",
         options: ["0", "1", "2", "3", "4"]
     })
     Auto4Prediction = 0;
@@ -404,7 +404,7 @@ class config {
         name: "Auto4 Randomized Yaw + Pitch",
         description: "May make it miss a tiny bit more idk, haven't really tested",
         category: "Device",
-        subcategory: "I4"
+        subcategory: "Auto4"
     })
     Auto4Randomize = false
 
@@ -412,7 +412,7 @@ class config {
         name: "Auto4 Prediction Timeout",
         description: "When to retry shooting the emerald (Default: 17)",
         category: "Device",
-        subcategory: "I4",
+        subcategory: "Auto4",
         min:5,
         max:20,
         increment:1
@@ -423,7 +423,7 @@ class config {
         name: "Auto4 Rotate Delay",
         description: "",
         category: "Device",
-        subcategory: "I4",
+        subcategory: "Auto4",
         min:0,
         max:300,
         increment:1
@@ -670,6 +670,14 @@ class config {
         subcategory: "General"
     })
     fastLeapTerm = false
+
+    @SwitchProperty({
+        name: "Toggle Queue Leap",
+        description: "Will Queue if you click in a terminal (should only use with inv walk)",
+        category: "Fast Leap",
+        subcategory: "General"
+    })
+    queueLeapToggle = false
 
     @TextProperty({
         name: "Lazy Mage Leap",
