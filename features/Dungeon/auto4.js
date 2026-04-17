@@ -118,79 +118,6 @@ function getUserName(name = "") {
     return name
 }
 
-// const auto4stuff = register("step", () => {
-//     if (!c.Auto4 || !active) return
-//     if (Player?.getHeldItem()?.getType()?.getId() !== 894 || Player?.getHeldItem()?.getName()?.toLowerCase()?.includes("last breath")) return
-    
-//     if (!AtI4() || !platePowered()) {
-//         if (!platePowered() && unshotBlocks.length > 0) restartI4()
-//         return;
-//     }
-
-//     const now = Date.now()
-//     predictedBlocks.forEach((expiry, block) => {
-//         if (now > expiry) predictedBlocks.delete(block)
-//     })
-
-//     const bowCooldown = getBowCooldown()
-//     if (now - lastShot < bowCooldown) return
-
-//     let blockToShoot
-//     const prediction = getAdjacentPrediction()
-//     const emeraldBlock = unshotBlocks.find(({ x, y, z }) => World.getBlockAt(x, y, z).getType().getName().includes("Emerald"))
-
-//     const emeraldExpiry = now + (c.Auto4Timeout ?? 10) * 50
-//     const predictionExpiry = now + ((c.Auto4Prediction * 5 * (bowCooldown / 250)) - 4) * 50
-
-//     if ((emeraldBlock && !predictedBlocks.has(emeraldBlock)) || (emeraldBlock && !prediction && unshotBlocks.length <= 2)) {
-//         blockToShoot = emeraldBlock
-//         if (Player.getHeldItem()?.getName()?.includes("Terminator")) {
-//             const offsetDirection = blockToShoot.x === 64 ? 1 : -1
-//             const index = blocks.indexOf(emeraldBlock) + (offsetDirection === -1 ? -1 : 0)
-//             predictedBlocks.set(blocks[index], emeraldExpiry)
-//             predictedBlocks.set(blocks[index + 1], emeraldExpiry)
-//         } else {
-//             predictedBlocks.set(blocks[blocks.indexOf(emeraldBlock)], emeraldExpiry)
-//         }
-
-//     } else if (c.Auto4Prediction > 0) {
-//         blockToShoot = prediction
-//         if (!blockToShoot) return
-//         const index = unshotBlocks.indexOf(blocks[blockToShoot.index]) + (blockToShoot.offsetDirection === -1 ? -1 : 0)
-        
-//         if (blockToShoot.adjacent) {
-//             predictedBlocks.set(unshotBlocks[index], predictionExpiry)
-//             predictedBlocks.set(unshotBlocks[index + 1], predictionExpiry)
-//         }
-//         else {
-//             predictedBlocks.set(unshotBlocks[index], predictionExpiry)
-//         }
-//     }
-
-//     if (!blockToShoot || rotationUtils.isRotating()) return
-//     let offset = 0.5
-//     if (Player.getHeldItem()?.getName()?.includes("Terminator")) offset = blockToShoot.x === 64 ? 1.3 : -0.6
-//     const [baseYaw, basePitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
-    
-//     //lastShot = Date.now()
-
-//     if (c.Auto4Rotate > 0) {
-//         rotationUtils.rotateSmoothly(baseYaw + getRandom(-0.5, 0.5), basePitch + getRandom(-0.5, 0.5), c.Auto4Rotate ?? 100, () => {
-//             rightClickItem();
-//             lastShot = Date.now()
-//             shots++;
-//             rotationUtils.stopRotation()
-//         });
-//     }
-//     else {
-//         rotationUtils.rotate(baseYaw, basePitch)
-//         shots++
-//         rightClickItem()
-//         lastShot = Date.now()
-//         rotationUtils.stopRotation()
-//     }
-// }).setFps(100).unregister()
-
 const auto4stuff = register("step", () => {
     if (!c.Auto4) return
     if (!active) return
@@ -203,7 +130,7 @@ const auto4stuff = register("step", () => {
         return;
     }
     const bowCooldown = getBowCooldown()
-    if (Date.now() - lastShot < bowCooldown) return
+    if (Date.now() - lastShot < (bowCooldown - c.Auto4Rotate)) return
     if (rotationUtils.isRotating()) return;
     let blockToShoot
     const prediction = getAdjacentPrediction()
@@ -233,37 +160,33 @@ const auto4stuff = register("step", () => {
             predictedBlocks.add(shotBlocks[0])
             predictedBlocks.add(shotBlocks[1])
             Client.scheduleTask((c.Auto4Prediction * 5 * (getBowCooldown() / 250)) - 4, () => { predictedBlocks.delete(shotBlocks[0]); predictedBlocks.delete(shotBlocks[1]); })
-            //Client.scheduleTask((c.auto4PredictionTimeout * 5 * (getBowCooldown() / 250)) - 4, () => { predictedBlocks.delete(shotBlocks[0]); predictedBlocks.delete(shotBlocks[1]); })
         }
         else {
             const shotBlocks = unshotBlocks[index]
             predictedBlocks.add(shotBlocks)
             Client.scheduleTask((c.Auto4Prediction * 5 * (getBowCooldown() / 250)) - 4, () => predictedBlocks.delete(shotBlocks))
-            //Client.scheduleTask((c.auto4PredictionTimeout * 5 * (getBowCooldown() / 250)) - 4, () => predictedBlocks.delete(shotBlocks))
         }
     }
     if (!blockToShoot) return
     let offset = 0.5
     if (Player.getHeldItem()?.getName()?.includes("Terminator")) offset = blockToShoot.x === 64 ? 1.3 : -0.6
-    const [baseYaw, basePitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
-    const randomizedPitch = basePitch + getRandom(-0.5, 0.5)
-    const randomizedYaw = baseYaw + getRandom(-0.5, 0.5)
-    // rotate(yaw, pitch)
-    // shots++
-    // rightClickItem()
-
+    let [yaw, pitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
+    if (c.Auto4Randomize) {
+        yaw += getRandom(-0.5, 0.5)
+        pitch += getRandom(-0.5, 0.5)
+    }
     if (c.Auto4Rotate > 0) {
-        rotationUtils.rotateSmoothly(randomizedYaw, randomizedPitch, c.Auto4Rotate ?? 100, () => {
+        rotationUtils.rotateSmoothly(yaw, pitch, c.Auto4Rotate ?? 100, () => {
             lastShot = Date.now()
-            rightClickItem();
+            rightClickItem()
             shots++;
             rotationUtils.stopRotation()
         });
     }
     else {
-        rotationUtils.rotate(baseYaw, basePitch)
-        lastShot = Date.now()
+        rotationUtils.rotate(yaw, pitch)
         shots++
+        lastShot = Date.now()
         rightClickItem()
         rotationUtils.stopRotation()
     }

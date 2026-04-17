@@ -39,6 +39,7 @@ class config {
         this.addDependency("Auto4 Prediction", "Auto4")
         this.addDependency("Auto4 Start Early", "Auto4")
         this.addDependency("Auto4 Auto Leap", "Auto4")
+        this.addDependency("Auto4 Randomized Yaw + Pitch", "Auto4")
         this.addDependency("Auto4 Prediction Timeout", "Auto4")
         this.addDependency("Auto4 Rod", "Auto4")
         this.addDependency("Auto4 Rotate Delay", "Auto4")
@@ -384,7 +385,7 @@ class config {
 
     @SwitchProperty({
         name: "Auto4 Auto Leap",
-        description: "Start Prefiring early (aka no debuff)",
+        description: "Will auto leap to your fastleap i4 player",
         category: "Device",
         subcategory: "I4"
     })
@@ -398,6 +399,14 @@ class config {
         options: ["0", "1", "2", "3", "4"]
     })
     Auto4Prediction = 0;
+
+    @SwitchProperty({
+        name: "Auto4 Randomized Yaw + Pitch",
+        description: "May make it miss a tiny bit more idk, haven't really tested",
+        category: "Device",
+        subcategory: "I4"
+    })
+    Auto4Randomize = false
 
     @SliderProperty({
         name: "Auto4 Prediction Timeout",
