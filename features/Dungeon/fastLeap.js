@@ -3,8 +3,10 @@ import c from "../../config"
 import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils"
 import { registerPacketChat } from "../../../PrivateASF-Fabric/util/Events"
 import { chat, isPlayerInBox, rightClick } from "../../util/utils"
+import terminalUtils from "../../util/terminalUtils"
 
 let lastOpener = "F_Fiery"
+let queued = false
 
 registerPacketChat((message) => {
     const match = message.match(/^(\w+) opened a WITHER door!$/)
@@ -25,16 +27,27 @@ const leapStuff = register("clicked", (x, y, button, isDown) => {
         if (Player.lookingAt()?.getName()?.removeFormatting() === "Inactive Terminal") return;
         if (isHoldingLeap()) {
             if (!c.fastLeapToggle) return
-            if (Client.getMinecraft().field_1755 || Client.isInGui()) return;
-
+            
             let leapTo = getLeap()
             if (!leapTo || !leapTo.length || !isHoldingLeap() || leapTo == Player.getName() || !dungeonUtils.party.has(leapTo)) return chat("&7Failed leap!");
-            // if (Player.lookingAt() instanceof Block) rightClick(true, false, false)
-            // else rightClick(false, false, false)
+
+            if (terminalUtils.inTerm) {
+                queued = true;
+                queueLeap.register()
+                chat("&eQueued leap!")
+                return;
+            }
             leapUtils.tryLeap(leapTo)
         }
     }
 }).unregister()
+
+const queueLeap = register("step", () => {
+    if (terminalUtils.inTerm) return;
+    queueLeap.unregister();
+    queued = false;
+    leapUtils.tryLeap(leapTo);
+}).setFps(5).unregister();
 
 dungeonUtils.registerWhenInDungeon(leapStuff)
 

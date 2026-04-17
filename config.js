@@ -401,14 +401,14 @@ class config {
 
     @SliderProperty({
         name: "Auto4 Prediction Timeout",
-        description: "When to retry shooting the emerald (Default: 10)",
+        description: "When to retry shooting the emerald (Default: 17)",
         category: "Device",
         subcategory: "I4",
         min:5,
         max:20,
         increment:1
     })
-    Auto4Timeout = 10;
+    Auto4Timeout = 17;
 
     @SliderProperty({
         name: "Auto4 Rotate Delay",

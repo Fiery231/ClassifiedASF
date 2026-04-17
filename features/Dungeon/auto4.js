@@ -23,7 +23,7 @@ const blocks = [
     { x: 68, y: 130, z: 50 }
 ]
 
-
+// Updated to Map to track expiration timestamps
 let unshotBlocks = []
 const predictedBlocks = new Set()
 let shots = 0
@@ -32,17 +32,22 @@ let active = false
 let lastShot = Date.now()
 
 register("worldUnload", () => {
-    predictedBlocks.clear()
-    unshotBlocks = []
+    restartI4()
     active = false
     start4(active)
 })
 
+
+const restartI4 = () => {
+    predictedBlocks.clear()
+    unshotBlocks = [...blocks]
+}
 const key = (x, y, z) => `${x},${y},${z}`
 const getRandom = (min, max) => Math.random() * (max - min) + min;
 const isEmerald = (x, y, z) => World.getBlockAt(x, y, z).getType().getName().includes("Emerald");
 const AtI4 = () => getDistanceToCoord(63.5, 127, 35.5) < 0.75
 const platePowered = () => World.getBlockAt(63, 127, 35).getState().toString().includes("power=1")
+
 const start4 = (bool) => {
     if (bool) {
         auto4stuff.register()
@@ -66,10 +71,8 @@ const getBowCooldown = () => {
     )
     if (!bowItem) return 250
     const line = bowItem?.getLore()?.find(line => line.toString().includes("Shot Cooldown"))
-
     const match = line.toString().removeFormatting().match(/Shot Cooldown: (\d+\.?\d*)s/)
     if (!match) return 250
-
     return parseFloat(match[1]) * 1000
 }
 
@@ -81,15 +84,14 @@ const getAdjacentPrediction = () => {
             if (blocks[i].x === 66) continue
             if (!unshotBlocks.includes(block)) continue
             if (predictedBlocks.has(block)) continue
-            let offsetDirection = block.x === 64 ? 1 : -1 // 1 means it offsets to the left and -1 means it offsets to the right basically (this is awful)
+            let offsetDirection = block.x === 64 ? 1 : -1
             const offsetBlock = blocks[i + offsetDirection]
-            if (isEmerald(block.x, block.y, block.z) || isEmerald(blocks[i + offsetDirection].x, block.y, block.z)) continue // Don't shoot adjacent to an emerald block
-            if (unshotBlocks.includes(offsetBlock) && !predictedBlocks.has(offsetBlock)) { // Checks if the adjacent block is not shot
+            if (isEmerald(block.x, block.y, block.z) || isEmerald(blocks[i + offsetDirection].x, block.y, block.z)) continue
+            if (unshotBlocks.includes(offsetBlock) && !predictedBlocks.has(offsetBlock)) {
                 return { x: block.x, y: block.y, z: block.z, index: i, offsetDirection: offsetDirection, adjacent: true }
             }
         }
     }
-
     for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i]
         if (!unshotBlocks.includes(block)) continue
@@ -101,26 +103,93 @@ const getAdjacentPrediction = () => {
 }
 
 const classNames = ["archer", "berserk", "healer", "mage", "tank"]
-
 function getClassUser(className) {
     const party = dungeonUtils.playerClasses
     for (let playerName in party) {
         let playerClass = party[playerName].class
-        if (className.toLowerCase() === playerClass.toLowerCase()) {
-            return playerName
-        }
+        if (className.toLowerCase() === playerClass.toLowerCase()) return playerName
     }
     chat(`&aNo player found with class &6${className}&c!`)
     return false
 }
 
 function getUserName(name = "") {
-    if (classNames.includes(name.toLowerCase())) {
-        return getClassUser(name)
-    }
+    if (classNames.includes(name.toLowerCase())) return getClassUser(name)
     return name
 }
 
+// const auto4stuff = register("step", () => {
+//     if (!c.Auto4 || !active) return
+//     if (Player?.getHeldItem()?.getType()?.getId() !== 894 || Player?.getHeldItem()?.getName()?.toLowerCase()?.includes("last breath")) return
+    
+//     if (!AtI4() || !platePowered()) {
+//         if (!platePowered() && unshotBlocks.length > 0) restartI4()
+//         return;
+//     }
+
+//     const now = Date.now()
+//     predictedBlocks.forEach((expiry, block) => {
+//         if (now > expiry) predictedBlocks.delete(block)
+//     })
+
+//     const bowCooldown = getBowCooldown()
+//     if (now - lastShot < bowCooldown) return
+
+//     let blockToShoot
+//     const prediction = getAdjacentPrediction()
+//     const emeraldBlock = unshotBlocks.find(({ x, y, z }) => World.getBlockAt(x, y, z).getType().getName().includes("Emerald"))
+
+//     const emeraldExpiry = now + (c.Auto4Timeout ?? 10) * 50
+//     const predictionExpiry = now + ((c.Auto4Prediction * 5 * (bowCooldown / 250)) - 4) * 50
+
+//     if ((emeraldBlock && !predictedBlocks.has(emeraldBlock)) || (emeraldBlock && !prediction && unshotBlocks.length <= 2)) {
+//         blockToShoot = emeraldBlock
+//         if (Player.getHeldItem()?.getName()?.includes("Terminator")) {
+//             const offsetDirection = blockToShoot.x === 64 ? 1 : -1
+//             const index = blocks.indexOf(emeraldBlock) + (offsetDirection === -1 ? -1 : 0)
+//             predictedBlocks.set(blocks[index], emeraldExpiry)
+//             predictedBlocks.set(blocks[index + 1], emeraldExpiry)
+//         } else {
+//             predictedBlocks.set(blocks[blocks.indexOf(emeraldBlock)], emeraldExpiry)
+//         }
+
+//     } else if (c.Auto4Prediction > 0) {
+//         blockToShoot = prediction
+//         if (!blockToShoot) return
+//         const index = unshotBlocks.indexOf(blocks[blockToShoot.index]) + (blockToShoot.offsetDirection === -1 ? -1 : 0)
+        
+//         if (blockToShoot.adjacent) {
+//             predictedBlocks.set(unshotBlocks[index], predictionExpiry)
+//             predictedBlocks.set(unshotBlocks[index + 1], predictionExpiry)
+//         }
+//         else {
+//             predictedBlocks.set(unshotBlocks[index], predictionExpiry)
+//         }
+//     }
+
+//     if (!blockToShoot || rotationUtils.isRotating()) return
+//     let offset = 0.5
+//     if (Player.getHeldItem()?.getName()?.includes("Terminator")) offset = blockToShoot.x === 64 ? 1.3 : -0.6
+//     const [baseYaw, basePitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
+    
+//     //lastShot = Date.now()
+
+//     if (c.Auto4Rotate > 0) {
+//         rotationUtils.rotateSmoothly(baseYaw + getRandom(-0.5, 0.5), basePitch + getRandom(-0.5, 0.5), c.Auto4Rotate ?? 100, () => {
+//             rightClickItem();
+//             lastShot = Date.now()
+//             shots++;
+//             rotationUtils.stopRotation()
+//         });
+//     }
+//     else {
+//         rotationUtils.rotate(baseYaw, basePitch)
+//         shots++
+//         rightClickItem()
+//         lastShot = Date.now()
+//         rotationUtils.stopRotation()
+//     }
+// }).setFps(100).unregister()
 
 const auto4stuff = register("step", () => {
     if (!c.Auto4) return
@@ -135,7 +204,7 @@ const auto4stuff = register("step", () => {
     }
     const bowCooldown = getBowCooldown()
     if (Date.now() - lastShot < bowCooldown) return
-
+    if (rotationUtils.isRotating()) return;
     let blockToShoot
     const prediction = getAdjacentPrediction()
     const emeraldBlock = unshotBlocks.find(({ x, y, z }) => World.getBlockAt(x, y, z).getType().getName().includes("Emerald"))
@@ -179,15 +248,13 @@ const auto4stuff = register("step", () => {
     const [baseYaw, basePitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
     const randomizedPitch = basePitch + getRandom(-0.5, 0.5)
     const randomizedYaw = baseYaw + getRandom(-0.5, 0.5)
-    lastShot = Date.now()
-
     // rotate(yaw, pitch)
     // shots++
     // rightClickItem()
-    if (rotationUtils.isRotating()) return;
 
     if (c.Auto4Rotate > 0) {
         rotationUtils.rotateSmoothly(randomizedYaw, randomizedPitch, c.Auto4Rotate ?? 100, () => {
+            lastShot = Date.now()
             rightClickItem();
             shots++;
             rotationUtils.stopRotation()
@@ -195,60 +262,41 @@ const auto4stuff = register("step", () => {
     }
     else {
         rotationUtils.rotate(baseYaw, basePitch)
+        lastShot = Date.now()
         shots++
         rightClickItem()
         rotationUtils.stopRotation()
     }
 }).setFps(100).unregister()
 
-
-
-register("command", () => {
-    unshotBlocks = [...blocks]
-
-    active = !active
-    start4(active)
-    chat(`auto4 ${active ? "enabled" : "disabled"} (this is a debug command)`)
-}).setName("auto4test")
-
-const emeraldColor = [0.2, 1.0, 0.3, 0.35]
-const alreadyShotColor = [1.0, 0.2, 0.2, 0.25]
-const predictionColor = [0.7, 0.3, 1.0, 0.30]
-
 const auto4solver = register("renderWorld", (ctx) => {
     if (!active) return
-
     blocks.forEach(block => {
         let color
-
-        if (isEmerald(block.x, block.y, block.z)) color = emeraldColor
-        
-        else if (!unshotBlocks.includes(block)) color = alreadyShotColor
-        
-        else if (predictedBlocks.has(block)) color = predictionColor
-
+        if (isEmerald(block.x, block.y, block.z)) color = [0.2, 1.0, 0.3, 0.35]
+        else if (!unshotBlocks.includes(block)) color = [1.0, 0.2, 0.2, 0.25]
+        else if (predictedBlocks.has(block)) color = [0.7, 0.3, 1.0, 0.30]
         else return
 
         const box = RenderUtils.getBox(block.x + 0.5, block.y, block.z + 0.5, 1, 1)
-
         RenderUtils.drawFilled(box, color, true)
         RenderUtils.drawOutline(box, color, true)
     })
 }).unregister()
+
 
 registerPacketChat((message) => {
     if (!c.Auto4) return
     if (message == "[BOSS] Goldor: Who dares trespass into my domain?") {
         timeStarted = Date.now();
         shots = 0;
-        if (c.Auto4Early) return;
-        unshotBlocks = [...blocks]
+        restartI4()
         active = true
         start4(active)
         return;
     }
     else if (message == "[BOSS] Storm: I should have known that I stood no chance." && c.Auto4Early) {
-        unshotBlocks = [...blocks]
+        restartI4()
         active = true
         start4(active)
         return;
@@ -257,17 +305,12 @@ registerPacketChat((message) => {
         if (!active || !c.Auto4Rod) return;
         if (!AtI4() || !platePowered()) return
         const rodSlot = Player.getInventory().getItems().findIndex(item => item?.getName().toLowerCase().includes("rod"))
-        if (rodSlot > 7 || rodSlot < 0) {
-            chat("Rod not found in your hotbar!")
-            return
-        }
+        if (rodSlot > 7 || rodSlot < 0) return
         setTimeout(() => {
-            if (getDistanceToCoord(63.5, 127, 35.5) > 0.75) return
-            if (!active) return
+            if (getDistanceToCoord(63.5, 127, 35.5) > 0.75 || !active) return
             active = false
             start4(active)
             const heldItemIndex = Player.getHeldItemIndex()
-            chat("Rod Swapping.")
             Client.scheduleTask(1, () => Player.setHeldItemIndex(rodSlot))
             Client.scheduleTask(2, () => rightClickItem())
             Client.scheduleTask(3, () => {
@@ -278,40 +321,68 @@ registerPacketChat((message) => {
         }, 2500)
     }
     const match = message.match(/^(\w{3,16}) completed a device! \(\d\/\d\)$/)
-    if (!match) return;
-    if (match[1] != Player.getName()) return;
-    if (!AtI4() || !platePowered()) return
+    if (!match || match[1] != Player.getName() || !AtI4() || !platePowered()) return;
     active = false
     start4(active)
     chat(`i4 took ${((Date.now() - timeStarted) / 1000).toFixed(2)} seconds and ${shots} shots to finish.`)
     rotationUtils.stopRotation()
-
-    if (!c.Auto4Leap) return;
-    const user = getUserName(c.i4Leap)
-    if (user) leapUtils.autoLeap(user)
+    if (c.Auto4Leap) {
+        const user = getUserName(c.i4Leap)
+        if (user) leapUtils.autoLeap(user)
+    }
 })
 
 const BlockListener = register("packetReceived", (packet, event) => {
     if (!active) return
     const pos = packet.getPos();
     const positionXYZ = { x: pos.getX(), y: pos.getY(), z: pos.getZ() };
+    
+    const originalBlock = blocks.find(b => b.x === positionXYZ.x && b.y === positionXYZ.y && b.z === positionXYZ.z);
+    if (!originalBlock) return;
 
     const index = unshotBlocks.findIndex(({ x, y, z }) => positionXYZ.x === x && positionXYZ.y === y && positionXYZ.z === z)
-    if (index === -1) return
-
     const block = packet.getState().getBlock().getName().getString()
-    if (!block.includes("Terracotta")) return;
-    if (isEmerald(positionXYZ.x, positionXYZ.y, positionXYZ.z)) unshotBlocks.splice(index, 1)
+
+    if (block.includes("Emerald") && index === -1) {
+        unshotBlocks.push(originalBlock);
+        predictedBlocks.delete(originalBlock);
+        return;
+    }
+
+    // Standard removal logic
+    if (index === -1 || !block.includes("Terracotta")) return;
+    if (isEmerald(positionXYZ.x, positionXYZ.y, positionXYZ.z)) {
+        unshotBlocks.splice(index, 1);
+    }
 }).setFilteredClass(BlockUpdateS2CPacket).unregister()
 
 const MultiBlockListener = register("packetReceived", (packet, event) => {
     if (!active) return;
     packet.visitUpdates((pos, state) => {
         const positionXYZ = { x: pos.getX(), y: pos.getY(), z: pos.getZ() };
+        
+        const originalBlock = blocks.find(b => b.x === positionXYZ.x && b.y === positionXYZ.y && b.z === positionXYZ.z);
+        if (!originalBlock) return;
+
         const index = unshotBlocks.findIndex(({ x, y, z }) => positionXYZ.x === x && positionXYZ.y === y && positionXYZ.z === z)
-        if (index === -1) return
         const block = state.getBlock().getName().getString();
-        if (!block.includes("Terracotta")) return;
-        if (isEmerald(positionXYZ.x, positionXYZ.y, positionXYZ.z)) unshotBlocks.splice(index, 1)
+
+        if (block.includes("Emerald") && index === -1) {
+            unshotBlocks.push(originalBlock);
+            predictedBlocks.delete(originalBlock);
+            return;
+        }
+
+        if (index === -1 || !block.includes("Terracotta")) return;
+        if (isEmerald(positionXYZ.x, positionXYZ.y, positionXYZ.z)) {
+            unshotBlocks.splice(index, 1);
+        }
     });
 }).setFilteredClass(ChunkDeltaUpdateS2CPacket).unregister()
+
+register("command", () => {
+    restartI4()
+    active = !active
+    start4(active)
+    chat(`auto4 ${active ? "enabled" : "disabled"}`)
+}).setName("auto4test")
