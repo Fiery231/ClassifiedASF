@@ -134,7 +134,13 @@ const auto4stuff = register("step", () => {
         return;
     }
     const bowCooldown = getBowCooldown()
-    if (Date.now() - lastShot < (bowCooldown - c.Auto4Rotate)) return
+    const rotateTime = c.Auto4Rotate
+
+    const effectiveCooldown = rotateTime > 0
+        ? Math.max(bowCooldown - rotateTime, rotateTime)
+        : bowCooldown
+
+    if (Date.now() - lastShot < effectiveCooldown) return
     if (rotationUtils.isRotating()) return;
     let blockToShoot
     const prediction = getAdjacentPrediction()
@@ -174,24 +180,27 @@ const auto4stuff = register("step", () => {
     if (!blockToShoot) return
     let offset = 0.5
     if (Player.getHeldItem()?.getName()?.includes("Terminator")) offset = blockToShoot.x === 64 ? 1.3 : -0.6
-    let [yaw, pitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1, blockToShoot.z);
+    let [yaw, pitch] = rotationUtils.calcYawPitch(blockToShoot.x + offset, blockToShoot.y + 1.1, blockToShoot.z);
     if (c.Auto4Randomize) {
-        yaw += getRandom(-0.5, 0.5)
-        pitch += getRandom(-0.5, 0.5)
+        yaw += getRandom(-0.2, 0.2)
+        pitch += getRandom(0, 0.5)
     }
 
     if (c.Auto4Rotate > 0) {
         rotationUtils.rotateSmoothly(yaw, pitch, c.Auto4Rotate ?? 100, () => {
             lastShot = Date.now()
-            rightClickItem()
-            shots++;
+            Client.scheduleTask(0, () => {
+                lastShot = Date.now()
+                rightClickItem()
+                shots++;
+            })
         });
     }
     else {
         rotationUtils.rotate(yaw, pitch)
+        rightClickItem()
         shots++
         lastShot = Date.now()
-        rightClickItem()
     }
 }).setFps(100).unregister()
 
@@ -240,8 +249,8 @@ registerPacketChat((message) => {
             active = false
             //start4(active)
             const heldItemIndex = Player.getHeldItemIndex()
-            Client.scheduleTask(1, () => {if (!devicedone) Player.setHeldItemIndex(rodSlot)})
-            Client.scheduleTask(2, () => {if (!devicedone) rightClickItem()})
+            Client.scheduleTask(1, () => { Player.setHeldItemIndex(rodSlot) })
+            Client.scheduleTask(2, () => { rightClickItem() })
             Client.scheduleTask(3, () => {
                 if (devicedone) {
                     I4AutoLeap()
@@ -252,7 +261,7 @@ registerPacketChat((message) => {
                     rodding = false
                     //start4(active)
                 }
-                
+
             })
         }, 2500)
     }

@@ -67,8 +67,8 @@ class rotationUtils {
             this.rotate(yaw, pitch);
 
             if (progress >= 1) {
-                this.stopRotation();
                 if (onComplete) onComplete();
+                this.stopRotation();
             }
         }).setFps(120);
     }
