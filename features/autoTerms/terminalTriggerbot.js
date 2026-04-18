@@ -45,7 +45,7 @@ register("tick", () => {
 })
 
 register("packetReceived", () => {
-	lastS08 = Date.now()
+    lastS08 = Date.now()
 }).setFilteredClass(PlayerPositionLookS2CPacket)
 
 
@@ -53,27 +53,35 @@ const highlights = {};
 let renderTriggerRegistered = false;
 
 const renderTrigger = register("renderWorld", () => {
-	const time = new Date().getTime();
-	for (let highlight of Object.values(highlights)) {
-		let progress = (time - highlight.start) / (highlight.end - highlight.start);
-		let position = highlight.position;
-		if (progress > 1) {
-			delete highlights[position.join()];
-			continue;
-		}
-		const w = 0.5
-		const h = 1.975
-		const alpha = ((1 - progress))
-		const phase = true
-		const colorFill = [1, 84 / 255, 1, alpha]
-		const [x, y, z] = position
-		const newBox = RenderUtils.getBox(x, y, z, w, h)
-		RenderUtils.drawFilled(newBox, colorFill, phase)
-	}
-	if (Object.values(highlights).length <= 0) {
-		renderTrigger.unregister();
-		renderTriggerRegistered = false;
-	}
+    const time = new Date().getTime();
+    for (let highlight of Object.values(highlights)) {
+        let progress = (time - highlight.start) / (highlight.end - highlight.start);
+        let position = highlight.position;
+
+        if (!highlight.static) {
+            let progress = (time - highlight.start) / (highlight.end - highlight.start);
+            if (progress > 1) {
+                delete highlights[position.join()];
+                continue;
+            }
+        }
+
+        const w = 0.5
+        const h = 1.975
+
+        const alpha = highlight.static ? 1 : ((1 - progress))
+
+        const phase = true
+        const colorFill = [1, 84 / 255, 1, alpha]
+
+        const [x, y, z] = position
+        const newBox = RenderUtils.getBox(x, y, z, w, h)
+        RenderUtils.drawFilled(newBox, colorFill, phase)
+    }
+    if (Object.values(highlights).length <= 0) {
+        renderTrigger.unregister();
+        renderTriggerRegistered = false;
+    }
 }).unregister();
 
 register("packetSent", (packet) => {
@@ -98,7 +106,7 @@ register("packetSent", (packet) => {
 
 }).setFilteredClass(PlayerInteractEntityC2SPacket);
 
-register("tick", () => {
+register("step", () => {
     if (!c.terminalTBHighlightNearby) return;
     if (!World.isLoaded()) return;
 
@@ -106,11 +114,24 @@ register("tick", () => {
     const py = Player.getY();
     const pz = Player.getZ();
 
-    const armorStands = World.getAllEntitiesOfType(ArmorStand);
-
     const now = Date.now();
 
-    armorStands.forEach(entity => {
+    Object.keys(highlights).forEach(key => {
+        const h = highlights[key];
+        if (!h.static) return;
+
+        const [x, y, z] = h.position;
+
+        const dx = x - px;
+        const dy = y - py;
+        const dz = z - pz;
+
+        if ((dx * dx + dy * dy + dz * dz) > 49) {
+            delete highlights[key];
+        }
+    });
+
+    World.getAllEntitiesOfType(ArmorStand).forEach(entity => {
         if (entity.getName()?.removeFormatting() !== "Inactive Terminal") return;
 
         const dx = entity.getX() - px;
@@ -125,9 +146,8 @@ register("tick", () => {
         if (highlights[key]) return; // already highlighted
 
         highlights[key] = {
-            start: now,
-            end: now + 1000,
-            position
+            position,
+            static: true
         };
 
         if (!renderTriggerRegistered) {
@@ -135,4 +155,4 @@ register("tick", () => {
             renderTriggerRegistered = true;
         }
     });
-});
+}).setFps(4)
