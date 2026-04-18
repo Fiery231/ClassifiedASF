@@ -85,7 +85,7 @@ const getAdjacentPrediction = () => {
     if (isTerm) {
         for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i]
-            if (blocks[i].x === 66) continue
+            //if (blocks[i].x === 66) continue
             if (!unshotBlocks.includes(block)) continue
             if (predictedBlocks.has(block)) continue
             let offsetDirection = block.x === 64 ? 1 : -1
@@ -137,7 +137,7 @@ const auto4stuff = register("step", () => {
     const rotateTime = c.Auto4Rotate
 
     const effectiveCooldown = rotateTime > 0
-        ? Math.max(bowCooldown - rotateTime, rotateTime)
+        ? Math.round(Math.max(bowCooldown - rotateTime, rotateTime) / 50) * 50
         : bowCooldown
 
     if (Date.now() - lastShot < effectiveCooldown) return
@@ -249,8 +249,8 @@ registerPacketChat((message) => {
             active = false
             //start4(active)
             const heldItemIndex = Player.getHeldItemIndex()
-            Client.scheduleTask(1, () => { Player.setHeldItemIndex(rodSlot) })
-            Client.scheduleTask(2, () => { rightClickItem() })
+            Client.scheduleTask(1, () => { if (!devicedone) Player.setHeldItemIndex(rodSlot) })
+            Client.scheduleTask(2, () => { if (!devicedone) rightClickItem() })
             Client.scheduleTask(3, () => {
                 if (devicedone) {
                     I4AutoLeap()

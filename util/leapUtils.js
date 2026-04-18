@@ -1,6 +1,6 @@
 import { registerPacketChat } from "../../PrivateASF-Fabric/util/Events";
 import { playSound } from "../../PrivateASF-Fabric/util/utils";
-import { chat, CloseHandledScreenC2SPacket, CloseScreenS2CPacket, OpenScreenS2CPacket, rightClick, ScreenHandlerSlotUpdateS2CPacket } from "./utils";
+import { chat, CloseHandledScreenC2SPacket, CloseScreenS2CPacket, OpenScreenS2CPacket, rightClick, rightClickItem, ScreenHandlerSlotUpdateS2CPacket } from "./utils";
 
 export default new class leapUtils {
     constructor() {
@@ -36,7 +36,7 @@ export default new class leapUtils {
                 if (Player.getContainer()) {
                     Player.getContainer().click(slot, false, "MIDDLE")
                     chat("&aLeaping to " + itemName)
-                    playSound("random.click", 1, 1.2);
+                    playSound("random.click", 1, 0.8);
                 }
             })
             
@@ -70,6 +70,12 @@ export default new class leapUtils {
         register('packetReceived', () => {
             if (this.menuOpened) this.menuOpened = false
         }).setFilteredClass(CloseScreenS2CPacket)
+
+        register("worldUnload", () => {
+            this._reloadGUI()
+            this.clearQueue()
+            this.clickedLeap = false
+        })
     }
 
     _inQueue() {
@@ -95,11 +101,11 @@ export default new class leapUtils {
     }
 
     autoLeap(name) {
-        if (this.clickedLeap) return;
-        if (this.inProgress) return;
+        if (this.clickedLeap || this.inProgress) return;
 
         const leapID = Player.getInventory().getItems().slice(0, 9).findIndex(a => a?.getName()?.toLowerCase()?.includes('leap'))
-        if (!leapID || leapID === -1){
+
+        if (leapID == null || leapID === -1) {
             this.clickedLeap = false
             this.inProgress = false
             this.leapQueue.shift()
@@ -111,9 +117,10 @@ export default new class leapUtils {
         Player.setHeldItemIndex(leapID)
 
         Client.scheduleTask(1, () => {
-            this.tryLeap(name)
+            rightClickItem()
             this.clickedLeap = true
         })
+        this.queueLeap(name)
     }
 
     tryLeap(leapTo) {

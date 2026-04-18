@@ -135,9 +135,15 @@ const relicPlaceTB = register("renderWorld", () => {
     const pos = look.getPos()
     const [x, y, z] = [pos.getX(), pos.getY(), pos.getZ()]
 
-    if (x == coords[0] && z == coords[1] && (y == 6 || y == 7) && Player.getHeldItem()?.getName()?.includes("Relic")) {
-        rightClick(true, true, true, 3)
-        placed = true
+    if (x == coords[0] && z == coords[1] && (y == 6 || y == 7)) {
+        if (Player.getHeldItem()?.getName()?.includes("Relic")) {
+            rightClick(true, true, true, 5)
+            placed = true
+        }
+        else {
+            Player.setHeldItemIndex(hotbarSlot)
+            Client.scheduleTask(1, () => rightClick(true, true, true, 5))
+        }
     }
 }).unregister()
 
