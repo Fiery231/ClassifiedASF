@@ -36,7 +36,7 @@ export default new class leapUtils {
                 if (Player.getContainer()) {
                     Player.getContainer().click(slot, false, "MIDDLE")
                     chat("&aLeaping to " + itemName)
-                    playSound("random.click", 1, 0.8);
+                    playSound("random.click", 0.8, 1.2);
                 }
             })
             
