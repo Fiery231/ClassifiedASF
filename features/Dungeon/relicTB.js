@@ -102,11 +102,11 @@ function getRelicColor(itemName) {
     return match ? match[1] : null;
 }
 
-
+let lastClick = Date.now()
 const relicPlaceTB = register("renderWorld", () => {
-
+    if (Date.now() - lastClick < 100) return;
+    
     const look = Player.lookingAt()
-
     if (!look || !(look instanceof Block)) return
 
     let hotbarSlot = Player.getInventory().getItems()
@@ -115,34 +115,25 @@ const relicPlaceTB = register("renderWorld", () => {
 
     if (hotbarSlot == -1) return
 
-    let relic = getRelicColor(
-        Player.getInventory()?.getStackInSlot(hotbarSlot)?.getName()?.removeFormatting()
-    )
-
+    let relic = getRelicColor(Player.getInventory()?.getStackInSlot(hotbarSlot)?.getName()?.removeFormatting())
     if (!relic) return
 
-    if (prevRelic == null || relic != prevRelic) {
-        prevRelic = relic
-        placed = false
-    }
-
-    if (placed) return
-
     let coords = placeblocks[relic.toLowerCase()]
-
     if (!coords) return
 
     const pos = look.getPos()
     const [x, y, z] = [pos.getX(), pos.getY(), pos.getZ()]
 
     if (x == coords[0] && z == coords[1] && (y == 6 || y == 7)) {
-        if (Player.getHeldItem()?.getName()?.includes("Relic")) {
-            rightClick(true, true, true, 5)
-            placed = true
-        }
+        lastClick = Date.now()
+        if (Player.getHeldItem()?.getName()?.includes("Relic")) rightClick(true, false, true)
         else {
             Player.setHeldItemIndex(hotbarSlot)
-            Client.scheduleTask(1, () => rightClick(true, true, true, 5))
+            Client.scheduleTask(1, () => {
+                if (!Player.getHeldItem()?.getName()?.includes("Relic")) return;
+                rightClick(true, false, true)
+                lastClick = Date.now()
+            })
         }
     }
 }).unregister()
