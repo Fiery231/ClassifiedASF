@@ -104,7 +104,7 @@ function getRelicColor(itemName) {
 
 let lastClick = Date.now()
 const relicPlaceTB = register("renderWorld", () => {
-    if (Date.now() - lastClick < 100) return;
+    if (Date.now() - lastClick < 150) return;
     
     const look = Player.lookingAt()
     if (!look || !(look instanceof Block)) return

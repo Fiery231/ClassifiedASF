@@ -86,25 +86,29 @@ function getLeap() {
     if (c.fastLeapDoor && !dungeonUtils.inBoss) leapString = getUserName(lastOpener)
 
     if (c.fastLeapTerm && dungeonUtils.inBoss && dungeonUtils.currentPhase == 3) {
-        if (isPlayerInBox(62, 126, 34, 64, 128, 36) && dungeonUtils.currentStage == 1) {
-            leapString = getUserName(c.i4Leap)
-        }
-        else if (isPlayerInBox(113, 160, 30, 90, 100, 143)) {
-            leapString = getUserName(c.ee2Leap)
-        }
-        else if (isPlayerInBox(90, 160, 145, -3, 100, 121)) {
-            leapString = getUserName(c.ee3Leap)
-        }
-        else if (isPlayerInBox(-6, 160, 121, 19, 100, 30)) {
-            leapString = getUserName(c.coreLeap)
-        }
-        else if (isPlayerInBox(19, 160, 27, 90, 100, 51)) {
-            leapString = getUserName(c.inCoreLeap)
-        }
-        else if (isPlayerInBox(91, 163, 96, 97, 168, 89)) {
-            leapString == getUserName(c.lazyLeap)
-        }
+        if (isPlayerInBox(62, 126, 34, 64, 128, 36) && dungeonUtils.currentStage == 1) leapString = getUserName(c.i4Leap)
+        else if (isPlayerInBox(113, 160, 30, 90, 100, 143)) leapString = getUserName(c.ee2Leap)
+        else if (isPlayerInBox(90, 160, 145, -3, 100, 121)) leapString = getUserName(c.ee3Leap)
+        else if (isPlayerInBox(-6, 160, 121, 19, 100, 30)) leapString = getUserName(c.coreLeap)
+        else if (isPlayerInBox(19, 160, 27, 90, 100, 51)) leapString = getUserName(c.inCoreLeap)
     }
 
+    if (isPlayerInBox(91, 163, 96, 97, 168, 89) && dungeonUtils.inBoss && dungeonUtils.currentPhase == 2) leapString = getUserName(c.lazyLeap)
+
     return leapString
+}
+
+registerPacketChat((message) => {
+    if (!c.autoLazyMageLeap) return
+    if (message == "[BOSS] Storm: Oof" || message == "[BOSS] Storm: Ouch, that hurt!") {
+        if (isPlayerInBox(91, 163, 96, 97, 168, 89) && dungeonUtils.inBoss && dungeonUtils.currentPhase == 2) autoLeapPre(c.lazyLeap)
+    }
+})
+
+const autoLeapPre = (stuff) => {
+    const user = getUserName(stuff)
+    if (user) {
+        chat("Auto Leaping to " + user)
+        leapUtils.autoLeap(user)
+    }
 }

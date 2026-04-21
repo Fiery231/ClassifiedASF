@@ -221,7 +221,15 @@ const auto4solver = register("renderWorld", (ctx) => {
 
 
 registerPacketChat((message) => {
-    if (!c.Auto4) return
+    if (!c.Auto4) {
+        const match = message.match(/^(\w{3,16}) completed a device! \(\d\/\d\)$/)
+        if (!match || match[1] != Player.getName() || !AtI4() || !platePowered()) return;
+        devicedone = true
+        if (c.Auto4Leap) {
+            if (!rodding) I4AutoLeap()
+        }
+        return
+    }
     if (message == "[BOSS] Goldor: Who dares trespass into my domain?") {
         timeStarted = Date.now();
         shots = 0;
@@ -265,6 +273,7 @@ registerPacketChat((message) => {
             })
         }, 2500)
     }
+
     const match = message.match(/^(\w{3,16}) completed a device! \(\d\/\d\)$/)
     if (!match || match[1] != Player.getName() || !AtI4() || !platePowered()) return;
     active = false

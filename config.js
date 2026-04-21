@@ -38,7 +38,6 @@ class config {
 
         this.addDependency("Auto4 Prediction", "Auto4")
         this.addDependency("Auto4 Start Early", "Auto4")
-        this.addDependency("Auto4 Auto Leap", "Auto4")
         this.addDependency("Auto4 Randomized Yaw + Pitch", "Auto4")
         this.addDependency("Auto4 Prediction Timeout", "Auto4")
         this.addDependency("Auto4 Rod", "Auto4")
@@ -730,6 +729,14 @@ class config {
         subcategory: "Leaps"
     })
     i4Leap = ""
+
+    @SwitchProperty({
+        name: "Auto Lazy Mage Leap",
+        description: "Leap when storm crushed",
+        category: "Fast Leap",
+        subcategory: "&1Auto Leap"
+    })
+    autoLazyMageLeap = false;
 
     @SwitchProperty({
         name: "Open Gui Editor",
