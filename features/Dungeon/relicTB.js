@@ -104,7 +104,7 @@ function getRelicColor(itemName) {
 
 let lastClick = Date.now()
 const relicPlaceTB = register("renderWorld", () => {
-    if (Date.now() - lastClick < 150) return;
+    if (Date.now() - lastClick < 600) return;
     
     const look = Player.lookingAt()
     if (!look || !(look instanceof Block)) return
@@ -126,12 +126,12 @@ const relicPlaceTB = register("renderWorld", () => {
 
     if (x == coords[0] && z == coords[1] && (y == 6 || y == 7)) {
         lastClick = Date.now()
-        if (Player.getHeldItem()?.getName()?.includes("Relic")) rightClick(true, false, true)
+        if (Player.getHeldItem()?.getName()?.includes("Relic")) rightClick(true, true, true, 3)
         else {
             Player.setHeldItemIndex(hotbarSlot)
             Client.scheduleTask(1, () => {
                 if (!Player.getHeldItem()?.getName()?.includes("Relic")) return;
-                rightClick(true, false, true)
+                rightClick(true, true, true, 3)
                 lastClick = Date.now()
             })
         }

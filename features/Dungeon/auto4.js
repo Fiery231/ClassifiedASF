@@ -249,7 +249,7 @@ registerPacketChat((message) => {
     else if (/^(?:Your (?:⚚ )?Bonzo's Mask saved your life!|Second Wind Activated! Your Spirit Mask saved your life!)$/.test(message)) {
         if (!active || !c.Auto4Rod) return;
         if (!AtI4() || !platePowered()) return
-        const rodSlot = Player.getInventory().getItems().findIndex(item => item?.getName().toLowerCase().includes("rod"))
+        const rodSlot = Player.getInventory().getItems().findIndex(item => item?.getName()?.toLowerCase()?.includes("rod"))
         if (rodSlot > 7 || rodSlot < 0) return
         setTimeout(() => {
             if (getDistanceToCoord(63.5, 127, 35.5) > 0.75 || !active || devicedone) return

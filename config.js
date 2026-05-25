@@ -70,7 +70,8 @@ class config {
         this.addDependency("I4 Leap", "Toggle Fast Leap")
 
         this.addDependency("Terminal TB Leap Delay", "Terminal Trigger Bot")
-        this.addDependency("Terminal Trigger Bot CPS", "Terminal Trigger Bot")
+        this.addDependency("Terminal Trigger Bot min", "Terminal Trigger Bot")
+        this.addDependency("Terminal Trigger Bot max", "Terminal Trigger Bot")
         this.registerListener("Open Gui Editor", (curr) => {
             Client.currentGui.close()
             activategui()
@@ -254,7 +255,7 @@ class config {
     terminalTB = false
 
     @SliderProperty({
-        name: "Terminal Trigger Bot CPS",
+        name: "Terminal Trigger Bot min",
         description: "",
         category: "Terminals",
         subcategory: "Trigger Bot",
@@ -262,7 +263,18 @@ class config {
         max: 20,
         increment: 1
     })
-    terminalTBCPS = 10;
+    terminalTBCPSMin = 15;
+
+    @SliderProperty({
+        name: "Terminal Trigger Bot max",
+        description: "",
+        category: "Terminals",
+        subcategory: "Trigger Bot",
+        min: 1,
+        max: 20,
+        increment: 1
+    })
+    terminalTBCPSMax = 20;
 
     @SliderProperty({
         name: "Terminal TB Leap Delay",
@@ -734,7 +746,7 @@ class config {
         name: "Auto Lazy Mage Leap",
         description: "Leap when storm crushed",
         category: "Fast Leap",
-        subcategory: "&1Auto Leap"
+        subcategory: "§1Auto Leap"
     })
     autoLazyMageLeap = false;
 

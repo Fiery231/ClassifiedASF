@@ -16,8 +16,8 @@ const main = register('renderworld', () => {
     const fcDelay = (c.autoTermFCDelay ?? 400)
     const breakThreshold = (c.autoTermBreakThres ?? 500)
 
-    const randomFactor = 1 + (Math.random() * 0.05) + (Math.sin(Date.now() / 300) * 0.03) + (Math.random() * Math.random() * 0.1);
-
+    const randomFactor = 1 + (Math.random() * 0.03) + (Math.sin(Date.now() / 300) * 0.02) + (Math.random() * Math.random() * 0.05);
+    
     currentDelay *= randomFactor
 
     if (firstClick && (Date.now() - lastClickTime < fcDelay)) return;

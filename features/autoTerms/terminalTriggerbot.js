@@ -16,7 +16,10 @@ register("packetReceived", (packet, event) => {
 
 
 registerPacketChat((message) => {
-    if (message.includes("This Terminal doesn't seem to be responsive at the moment.")) lastClick = (20 / c.terminalTBCPS)
+    if (message.includes("This Terminal doesn't seem to be responsive at the moment.")) {
+        const cps = Math.floor(Math.random() * (c.terminalTBCPSMax - c.terminalTBCPSMin + 1)) + c.terminalTBCPSMin;
+        lastClick = (20 / cps);
+    }
 })
 
 
