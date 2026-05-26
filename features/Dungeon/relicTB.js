@@ -1,7 +1,9 @@
 import { registerPacketChat } from "../../../PrivateASF-Fabric/util/Events";
 import { ArmorStand, Vec3 } from "../../../PrivateASF-Fabric/util/utils";
 import c from "../../config"
-import { getDistance3D, getSequence, PlayerInteractEntityC2SPacket, rightClick } from "../../util/utils";
+import { chat, getDistance3D, getSequence, PlayerInteractEntityC2SPacket, rightClick, pressMovementKey } from "../../util/utils";
+import RotationUtils from "../../util/RotationUtils";
+import dungeonUtils from "../../../PrivateASF-Fabric/util/dungeonUtils";
 
 const RaycastContext = Java.type("net.minecraft.world.RaycastContext")
 const ShapeType = Java.type("net.minecraft.world.RaycastContext$ShapeType")
@@ -76,6 +78,25 @@ const relicPickupAura = register("tick", () => {
     relicPickupAura.unregister()
 }).unregister()
 
+const EquipmentSlot = Java.type("net.minecraft.class_1304")
+
+register("packetSent", (packet) => {
+    if (!c.relicLook || (dungeonUtils.currentPhase != 4 && dungeonUtils.currentPhase != 5)) return;
+    const entity = World.getWorld().getEntityById(packet.entityId)
+    if (!entity || !(entity instanceof ArmorStand)) return
+
+    const helmet = entity.method_6118(EquipmentSlot.field_6169)
+    if (!helmet) return;
+    let relic = getRelicColor(helmet.getName()?.getString()?.removeFormatting())
+    if (!relic || (relic != "Red" && relic != "Orange")) return; 
+    let coords = placeblocks[relic.toLowerCase()]
+    if (!coords) return;
+    
+    const [y, p] = RotationUtils.calcYawPitch(coords[0] + 0.5, 7.5, coords[1] + 0.5)
+    RotationUtils.rotateSmoothly(y, p, c.relicLookTime)
+    if (c.relicLookRun) pressMovementKey("forwardKey", true)
+}).setFilteredClass(PlayerInteractEntityC2SPacket)
+
 const interactEntity = (entity) => {
     const dy = entity.getHeight() / 2
     const dx = 0.0
@@ -101,6 +122,7 @@ function getRelicColor(itemName) {
     const match = itemName.match(/Corrupted (\w+) Relic/);
     return match ? match[1] : null;
 }
+
 
 let lastClick = Date.now()
 const relicPlaceTB = register("renderWorld", () => {
@@ -133,6 +155,7 @@ const relicPlaceTB = register("renderWorld", () => {
                 if (!Player.getHeldItem()?.getName()?.includes("Relic")) return;
                 rightClick(true, true, true, 3)
                 lastClick = Date.now()
+                if (c.relicLookRun)pressMovementKey("forwardKey", false)
             })
         }
     }
@@ -159,7 +182,10 @@ const relicPlaceAura = register("tick", () => {
         if (Player.getHeldItem()?.getName()?.includes("Relic")) sendBlockInteract(coords[0], 7, coords[1])
         else {
             Player.setHeldItemIndex(hotbarSlot)
-            Client.scheduleTask(1, () => sendBlockInteract(coords[0], 7, coords[1]))
+            Client.scheduleTask(1, () => {
+                sendBlockInteract(coords[0], 7, coords[1])
+                if (c.relicLookRun) pressMovementKey("forwardKey", false)
+            })
         }
     }
 
@@ -179,43 +205,3 @@ const sendBlockInteract = (x, y, z) => {
     const packet = new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, hitResult, getSequence())
     Client.sendPacket(packet)
 }
-
-// const Handler = Java.type("net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket$Handler")
-
-// register("packetSent", (packet) => {
-
-//     packet.handle(new Handler({
-//         method_34219: (entity, hand) => {
-//             ChatLib.chat("INTERACT")
-//         },
-
-//         method_34220: (entity, hand, vec) => {
-//             ChatLib.chat("INTERACT_AT")
-//         },
-
-//         method_34218: (entity) => {
-//             ChatLib.chat("ATTACK")
-//         }
-//     }))
-//     ChatLib.chat("\n\n")
-// }).setFilteredClass(PlayerInteractEntityC2SPacket)
-
-
-// function getBlockHitResult(x, y, z) {
-//     const player = Player.getPlayer()
-//     const world = World.getWorld()
-
-//     const start = player.getEyePos()
-//     const end = new Vec3(x + 0.5, y + 0.5, z + 0.5)
-
-//     const result = world.raycast(new RaycastContext(
-//         start,
-//         end,
-//         ShapeType.OUTLINE,
-//         FluidHandling.NONE,
-//         player
-//     ))
-//     if (!result) return null
-//     if (result.getType().toString() !== "BLOCK") return null
-//     return result
-// }

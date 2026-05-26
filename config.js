@@ -72,6 +72,10 @@ class config {
         this.addDependency("Terminal TB Leap Delay", "Terminal Trigger Bot")
         this.addDependency("Terminal Trigger Bot min", "Terminal Trigger Bot")
         this.addDependency("Terminal Trigger Bot max", "Terminal Trigger Bot")
+
+        this.addDependency("Relic Run", "Relic Look")
+        this.addDependency("Relic Look Rotate Time", "Relic Look")
+        
         this.registerListener("Open Gui Editor", (curr) => {
             Client.currentGui.close()
             activategui()
@@ -318,6 +322,33 @@ class config {
         subcategory: "Relics"
     })
     relicPlaceTB = false
+
+    @SwitchProperty({
+        name: "Relic Look",
+        description: "Relic look red and orange",
+        category: "Boss",
+        subcategory: "Relics"
+    })
+    relicLook = false
+
+    @SwitchProperty({
+        name: "Relic Run",
+        description: "",
+        category: "Boss",
+        subcategory: "Relics"
+    })
+    relicLookRun = false
+    
+    @SliderProperty({
+        name: "Relic Look Rotate Time",
+        description: "",
+        category: "Boss",
+        subcategory: "Relics",
+        min: 0,
+        max: 500,
+        increment: 1,
+    })
+    relicLookTime = 150;
 
     @SwitchProperty({
         name: "Relic Pickup Aura",
