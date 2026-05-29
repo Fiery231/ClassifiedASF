@@ -17,8 +17,10 @@ register("worldLoad", () => {
     relicPickupTB.unregister()
     relicPlaceAura.unregister()
     relicPlaceTB.unregister()
+    tickRelic.unregister()
     prevRelic = null
     placed = false
+    hadRelic = false
 })
 
 registerPacketChat((message) => {
@@ -79,6 +81,7 @@ const relicPickupAura = register("tick", () => {
 }).unregister()
 
 const EquipmentSlot = Java.type("net.minecraft.class_1304")
+let hadRelic = false
 
 register("packetSent", (packet) => {
     if (!c.relicLook || (dungeonUtils.currentPhase != 4 && dungeonUtils.currentPhase != 5)) return;
@@ -93,9 +96,42 @@ register("packetSent", (packet) => {
     if (!coords) return;
     
     const [y, p] = RotationUtils.calcYawPitch(coords[0] + 0.5, 7.5, coords[1] + 0.5)
-    RotationUtils.rotateSmoothly(y, p, c.relicLookTime)
+    RotationUtils.rotateSmoothly(y, p, c.relicLookTime, () => {tickRelic.register()})
     if (c.relicLookRun) pressMovementKey("forwardKey", true)
+    hadRelic = false
 }).setFilteredClass(PlayerInteractEntityC2SPacket)
+
+const tickRelic = register("tick", () => {
+    if (!c.relicLook || (dungeonUtils.currentPhase != 4 && dungeonUtils.currentPhase != 5)) {
+        hadRelic = false
+        tickRelic.unregister();
+        return;
+    }
+    if (RotationUtils.isRotating()) return;
+    let hotbarSlot = Player.getInventory().getItems()
+        .slice(0, 9)
+        .findIndex(item => item?.getName()?.includes("Relic"))
+
+    if (hotbarSlot === -1) {
+        if (hadRelic) {
+            hadRelic = false
+            tickRelic.unregister()
+        }
+        return
+    }
+
+    hadRelic = true
+
+    let relic = getRelicColor(Player.getInventory()?.getStackInSlot(hotbarSlot)?.getName()?.removeFormatting())
+    if (!relic || (relic != "Red" && relic != "Orange")) return; 
+
+    let coords = placeblocks[relic.toLowerCase()]
+    if (!coords) return
+
+    const [y, p] = RotationUtils.calcYawPitch(coords[0] + 0.5, 7.5, coords[1] + 0.5)
+
+    RotationUtils.rotateSmoothly(y, p, c.relicLookTime)
+}).unregister()
 
 const interactEntity = (entity) => {
     const dy = entity.getHeight() / 2
